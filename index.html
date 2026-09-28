@@ -23,7 +23,7 @@
   --hero:#15110F; --hero-ink:#F4F5F7; --hero-muted:#9AA1AE; --hero-line:#34292A;
   --accent:#D7261E; --gold:#D9A441;
   --sale:#138A6B; --spend:#D0543A; --good:#14875A; --bad:#C8352C;
-  --c1:#138A6B; --c2:#E8A317; --c3:#5B5BD6; --c4:#2F80C2; --c5:#C2477C;
+  --c1:#138A6B; --c2:#E8A317; --c3:#5B5BD6; --c4:#2F80C2; --c5:#C2477C; --c6:#8A6D3B; --c7:#0F7C8C; --c8:#6B7280;
   --shadow:0 1px 2px rgba(20,23,28,.05),0 6px 20px rgba(20,23,28,.06);
   --display:"Sora",system-ui,sans-serif;
   --body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -33,13 +33,13 @@
   --bg:#0D0F12; --card:#171A1F; --ink:#EDEFF2; --muted:#8C94A2; --line:#262A31; --soft:#1E2127;
   --hero:#1E1714; --hero-ink:#F4F5F7; --hero-muted:#9AA1AE; --hero-line:#3E3031;
   --accent:#FF4A3D; --gold:#E3B04F; --sale:#3CC39C; --spend:#EE7A5F; --good:#48C98A; --bad:#F2706A;
-  --c1:#3CC39C; --c2:#F2B537; --c3:#8F8CF2; --c4:#5BA8E8; --c5:#E57AA6;
+  --c1:#3CC39C; --c2:#F2B537; --c3:#8F8CF2; --c4:#5BA8E8; --c5:#E57AA6; --c6:#C9A36B; --c7:#3FB7C7; --c8:#9CA3AF;
   --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0D0F12; --card:#171A1F; --ink:#EDEFF2; --muted:#8C94A2; --line:#262A31; --soft:#1E2127;
   --hero:#1E1714; --hero-ink:#F4F5F7; --hero-muted:#9AA1AE; --hero-line:#3E3031;
   --accent:#FF4A3D; --gold:#E3B04F; --sale:#3CC39C; --spend:#EE7A5F; --good:#48C98A; --bad:#F2706A;
-  --c1:#3CC39C; --c2:#F2B537; --c3:#8F8CF2; --c4:#5BA8E8; --c5:#E57AA6;
+  --c1:#3CC39C; --c2:#F2B537; --c3:#8F8CF2; --c4:#5BA8E8; --c5:#E57AA6; --c6:#C9A36B; --c7:#3FB7C7; --c8:#9CA3AF;
   --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}
 *{box-sizing:border-box}
 html{color-scheme:light;-webkit-text-size-adjust:100%}
@@ -108,7 +108,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .srow{display:grid;grid-template-columns:minmax(0,1fr) 5.4rem auto;grid-template-areas:"n i b" "m i b";column-gap:8px;row-gap:3px;padding:9px 0;border-top:1px solid var(--line);align-items:center}
 .srow:first-child{border-top:0}
 .srow .n{grid-area:n;display:flex;justify-content:space-between;gap:8px;min-width:0;font-weight:600;font-size:.92rem}
-.srow .n span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.srow .n span:first-child{min-width:0;line-height:1.2;overflow-wrap:anywhere}
 .srow .t{font:600 .88rem var(--mono);font-variant-numeric:tabular-nums}
 .srow .t.zero{color:var(--muted);font-weight:500}
 .srow .m{grid-area:m;height:3px;border-radius:2px;background:var(--soft);overflow:hidden}
@@ -117,6 +117,51 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .plus{grid-area:b;width:38px;height:38px;border:0;border-radius:10px;cursor:pointer;color:#fff;font:600 1.25rem/1 var(--body)}
 .plus.s{background:var(--sale)} .plus.x{background:var(--spend)}
 .plus:disabled{opacity:.5}
+.srow.x{grid-template-columns:minmax(0,1fr) 4.6rem auto auto;grid-template-areas:"n i c b" "m i c b"}
+.cam{grid-area:c;position:relative;width:38px;height:38px;border-radius:10px;border:1px dashed var(--line);background:var(--soft);color:var(--muted);display:grid;place-items:center;cursor:pointer;overflow:hidden;background-size:cover;background-position:center}
+.cam input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.cam.has{border:2px solid var(--spend);color:transparent}
+.cam.has svg{opacity:0}
+button.ico{border:0;padding:0;cursor:pointer;overflow:hidden;position:relative}
+.ico.add{background:var(--soft);color:var(--muted);border:1px dashed var(--line)}
+.ico img{width:100%;height:100%;object-fit:cover;display:block}
+.ico.ph{outline:2px solid var(--spend);outline-offset:-2px}
+.ico input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.edt{font:600 .7rem var(--body);background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:3px 8px;margin-left:6px;cursor:pointer;vertical-align:2px}
+.msheet{position:fixed;inset:0;z-index:15;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
+.mpanel{background:var(--card);color:var(--ink);width:100%;max-width:560px;max-height:88%;overflow-y:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));display:grid;gap:12px;align-content:start}
+@media (min-width:600px){.msheet{align-items:center}.mpanel{border-radius:20px}}
+.mhead{display:flex;justify-content:space-between;align-items:center}
+.tlist{display:grid}
+.titem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 8px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.titem:first-child{border-top:0}
+.titem input.tn{width:100%;min-width:0;font:600 .92rem var(--body);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.titem.hid input.tn{color:var(--muted);text-decoration:line-through}
+.titem .tb{display:flex;gap:4px}
+.titem .tf{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:.78rem;color:var(--muted)}
+.chk{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--muted);cursor:pointer}
+.chk input{width:18px;height:18px;accent-color:var(--accent)}
+.tadd{display:grid;gap:8px;border-top:2px solid var(--line);padding-top:12px}
+.trow2{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.trow2 input{font:500 .95rem var(--body);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px;min-width:0}
+.thelp{margin:0;font-size:.78rem;color:var(--muted)}
+.imgrid{display:grid;gap:8px}
+.imgrid select{font:500 .95rem var(--body);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%;min-width:0}
+.impv{background:var(--soft);border-radius:12px;padding:10px 12px;display:grid;gap:4px;font-size:.84rem;max-height:220px;overflow-y:auto}
+.impv .pr{display:flex;justify-content:space-between;gap:10px}
+.impv .pr b{font:600 .84rem var(--mono)}
+.impv .pr.rep span:first-child::after{content:" · replaces earlier import";color:var(--muted);font-size:.74rem}
+.impv .ph{font-weight:700;display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:4px;margin-bottom:2px}
+.impv .warn{color:var(--bad)}
+.viewer{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.92);display:grid;grid-template-rows:auto 1fr auto;padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));gap:12px}
+.viewer .vt{color:#fff;display:flex;justify-content:space-between;align-items:center;gap:10px;font:600 .9rem var(--body)}
+.viewer .vt small{display:block;color:#bbb;font-weight:500}
+.viewer img{max-width:100%;max-height:100%;object-fit:contain;margin:auto;border-radius:8px;min-height:0}
+.viewer .va{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.vbtn{font:700 .88rem var(--body);border:0;border-radius:12px;padding:11px 16px;cursor:pointer;background:#fff;color:#111}
+.vbtn.alt{background:#333;color:#fff}.vbtn.del{background:#3a1b1b;color:#FF8A80}
+.vbtn.alt{position:relative;overflow:hidden}.vbtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 
 /* summary */
@@ -239,11 +284,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 
   <div class="grid2" data-in="day">
     <section class="card">
-      <div class="ehead"><h2>Sales</h2><span class="num" id="dSales2" style="color:var(--sale)">£0.00</span></div>
+      <div class="ehead"><h2>Sales <button type="button" class="edt" data-k="sale">Edit tabs</button></h2><span class="num" id="dSales2" style="color:var(--sale)">£0.00</span></div>
       <div class="rows" id="saleRows"></div>
     </section>
     <section class="card">
-      <div class="ehead"><h2>Expenses</h2><span class="num" id="dExp2" style="color:var(--spend)">£0.00</span></div>
+      <div class="ehead"><h2>Expenses <button type="button" class="edt" data-k="expense">Edit tabs</button></h2><span class="num" id="dExp2" style="color:var(--spend)">£0.00</span></div>
       <div class="rows" id="expRows"></div>
     </section>
   </div>
@@ -271,8 +316,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
   <section class="stats" data-in="sum" aria-label="Key figures">
     <div class="stat"><span class="lbl">Avg sales / day</span><b id="sAvg">–</b><small id="sDays">0 days traded</small></div>
     <div class="stat"><span class="lbl">Best day</span><b id="sBest">–</b><small id="sBestD">–</small></div>
-    <div class="stat"><span class="lbl">Delivery apps</span><b id="sApps">–</b><small>of sales via Just Eat, Uber, Deliveroo</small></div>
-    <div class="stat"><span class="lbl">Food cost</span><b id="sFood">–</b><small>suppliers and meat as % of sales</small></div>
+    <div class="stat"><span class="lbl">Delivery apps</span><b id="sApps">–</b><small>of sales from delivery app tabs</small></div>
+    <div class="stat"><span class="lbl">Food cost</span><b id="sFood">–</b><small>food stock tabs as % of sales</small></div>
   </section>
 
   <section class="card" data-in="sum">
@@ -301,30 +346,76 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
         <button type="button" data-f="all" aria-pressed="true">All</button>
         <button type="button" data-f="sale" aria-pressed="false">Sales</button>
         <button type="button" data-f="expense" aria-pressed="false">Expenses</button>
+        <button type="button" data-f="receipts" aria-pressed="false">Receipts</button>
       </div>
     </div>
     <div id="book"><p class="empty">Loading your entries…</p></div>
   </section>
 
   <section class="card backup" data-in="book" id="backupCard">
-    <h2>Backup and restore</h2>
-    <p id="bkInfo">Your figures are saved on this phone only. Send a backup to yourself on WhatsApp or email once a week.</p>
+    <h2>Import, backup and restore</h2>
+    <p id="bkInfo">Your figures are saved on this phone only. Receipt photos are included. Send a backup to yourself on WhatsApp or email once a week.</p>
     <div class="brow2">
       <button type="button" class="bbtn" id="bkSave">Back up now</button>
       <button type="button" class="bbtn alt" id="csvBtn">Export CSV (this period)</button>
+      <button type="button" class="bbtn" id="impBtn">Import sales report</button>
+      <button type="button" class="bbtn alt" id="tabsBtn">Manage tabs</button>
       <label class="bbtn alt filepick">Restore from backup<input type="file" id="bkLoad" accept=".json,.csv,application/json,text/csv"></label>
     </div>
   </section>
 </div>
 <p class="foot" id="foot">Every entry saves automatically on this phone. Works without internet.</p>
+<div class="msheet" id="tabsSheet" hidden role="dialog" aria-modal="true" aria-labelledby="tsTitle">
+  <div class="mpanel">
+    <div class="mhead"><h2 id="tsTitle">Manage tabs</h2><button type="button" class="mini ok" id="tsDone">Done</button></div>
+    <div class="filters" role="group" aria-label="Tab type"><button type="button" data-tk="sale" aria-pressed="true">Sales tabs</button><button type="button" data-tk="expense" aria-pressed="false">Expense tabs</button></div>
+    <div class="tlist" id="tsList"></div>
+    <div class="tadd">
+      <label class="lbl" for="tsNew">Add a new tab</label>
+      <div class="trow2"><input id="tsNew" maxlength="40" placeholder="e.g. Booker" autocomplete="off"><button type="button" class="bbtn" id="tsAdd">Add</button></div>
+      <label class="chk"><input type="checkbox" id="tsFlag"> <span id="tsFlagLbl">Delivery app</span></label>
+    </div>
+    <p class="thelp" id="tsHelp"></p>
+  </div>
+</div>
+<div class="msheet" id="impSheet" hidden role="dialog" aria-modal="true" aria-labelledby="imTitle">
+  <div class="mpanel">
+    <div class="mhead"><h2 id="imTitle">Import a report</h2><button type="button" class="mini" id="imClose">Close</button></div>
+    <p class="thelp">Download your orders or payouts report (CSV or Excel) from Just Eat, Uber Eats, Deliveroo or your card machine, then choose it here. The app adds one total per day to the tab you pick.</p>
+    <label class="bbtn filepick" style="text-align:center">Choose report file<input type="file" id="imFile" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"></label>
+    <div id="imMap" hidden class="imgrid">
+      <p class="thelp" id="imFileName"></p>
+      <label class="lbl" for="imDate">Which column has the date?</label><select id="imDate"></select>
+      <label class="lbl" for="imAmt">Which column has the money amount?</label><select id="imAmt"></select>
+      <label class="lbl" for="imTab">Put it into which tab?</label><select id="imTab"></select>
+      <div class="impv" id="imPrev"></div>
+      <button type="button" class="bbtn" id="imGo">Import</button>
+    </div>
+  </div>
+</div>
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-label="Receipt photo">
+  <div class="vt"><div><span id="vTitle"></span><small id="vSub"></small></div><button type="button" class="vbtn alt" id="vClose">Close</button></div>
+  <img id="vImg" alt="Receipt photo">
+  <div class="va"><button type="button" class="vbtn" id="vShare">Share</button><label class="vbtn alt">Replace<input type="file" accept="image/*" id="vReplace"></label><button type="button" class="vbtn del" id="vDel">Remove photo</button></div>
+</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-const SALE_CATS=["Just Eat","Uber","Deliveroo","Card payment","Cash on counter"];
-const EXP_CATS=["Fallowfield Cash & Carry","Ahmed Cash & Carry","Sultan","Meat","Delivery driver","Others"];
-const APPS=["Just Eat","Uber","Deliveroo"];
-const FOOD=["Fallowfield Cash & Carry","Ahmed Cash & Carry","Sultan","Meat"];
-const SALE_COL=["var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c1)"];
+const TKEY="shalimar-tabs-v1";
+const DEFAULT_TABS=[
+  {n:"Just Eat",k:"sale",f:true},{n:"Uber",k:"sale",f:true},{n:"Deliveroo",k:"sale",f:true},{n:"Card payment",k:"sale"},{n:"Cash on counter",k:"sale"},
+  {n:"Fallowfield Cash & Carry",k:"expense",f:true},{n:"Ahmed Cash & Carry",k:"expense",f:true},{n:"Sultan",k:"expense",f:true},{n:"Meat",k:"expense",f:true},{n:"Delivery driver",k:"expense"},{n:"Others",k:"expense"}];
+let TABS=(()=>{try{const t=JSON.parse(localStorage.getItem(TKEY)||"null");if(Array.isArray(t)&&t.length)return t.filter(x=>x&&x.n&&(x.k==="sale"||x.k==="expense"))}catch(e){}return DEFAULT_TABS.map(x=>({...x}))})();
+function saveTabs(){try{localStorage.setItem(TKEY,JSON.stringify(TABS))}catch(e){toast("Couldn't save tabs on this phone",1)}}
+const PALETTE=["var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c1)","var(--c6)","var(--c7)","var(--c8)"];
+let SALE_CATS=[],EXP_CATS=[],APPS=[],FOOD=[],SALE_COL=[];
+function syncTabs(){
+  // keep any category that appears in saved entries, as a hidden tab
+  entries.forEach(x=>{if(!TABS.some(t=>t.n===x.category&&t.k===x.type))TABS.push({n:x.category,k:x.type,hid:true})});
+  SALE_CATS=TABS.filter(t=>t.k==="sale").map(t=>t.n);EXP_CATS=TABS.filter(t=>t.k==="expense").map(t=>t.n);
+  APPS=TABS.filter(t=>t.k==="sale"&&t.f).map(t=>t.n);FOOD=TABS.filter(t=>t.k==="expense"&&t.f).map(t=>t.n);
+  SALE_COL=SALE_CATS.map((c,i)=>PALETTE[i%PALETTE.length]);}
+const visible=k=>TABS.filter(t=>t.k===k&&!t.hid).map(t=>t.n);
 const $=id=>document.getElementById(id);
 const gbp=n=>(n<0?"−":"")+"£"+Math.abs(n).toLocaleString("en-GB",{minimumFractionDigits:2,maximumFractionDigits:2});
 const gbp0=n=>(n<0?"−":"")+"£"+Math.abs(n).toLocaleString("en-GB",{maximumFractionDigits:0});
@@ -370,11 +461,54 @@ function delta(el,cur,prev,label,invert,pts){
 }
 
 /* ---------- day view ---------- */
+/* ---------- receipt photos (IndexedDB on this phone) ---------- */
+const CAM=`<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>`;
+let pdbP=null;
+function pdb(){if(!pdbP)pdbP=new Promise((res,rej)=>{const q=indexedDB.open("shalimar-photos",1);q.onupgradeneeded=()=>q.result.createObjectStore("photos");q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});return pdbP}
+async function ptx(mode,fn){const d=await pdb();return new Promise((res,rej)=>{const t=d.transaction("photos",mode),st=t.objectStore("photos");let out;const r=fn(st);if(r)r.onsuccess=()=>out=r.result;t.oncomplete=()=>res(out);t.onerror=()=>rej(t.error)})}
+const photoPut=(id,b)=>ptx("readwrite",st=>st.put(b,id));
+const photoGet=id=>ptx("readonly",st=>st.get(id));
+const photoDel=id=>ptx("readwrite",st=>st.delete(id));
+async function shrink(file){
+  const url=URL.createObjectURL(file);
+  try{const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url});
+    const max=1400,k=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+    const c=document.createElement("canvas");c.width=Math.round(img.naturalWidth*k);c.height=Math.round(img.naturalHeight*k);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    return await new Promise(res=>c.toBlob(b=>res(b||file),"image/jpeg",.72))}
+  catch(e){return file}finally{URL.revokeObjectURL(url)}}
+const thumbs=new Map();
+async function thumbURL(id){if(thumbs.has(id))return thumbs.get(id);const b=await photoGet(id);if(!b)return null;const u=URL.createObjectURL(b);thumbs.set(id,u);return u}
+function dropThumb(id){const u=thumbs.get(id);if(u){URL.revokeObjectURL(u);thumbs.delete(id)}}
+async function attachPhoto(x,file){
+  try{const b=await shrink(file);await photoPut(x.id,b);dropThumb(x.id);
+    if(!x.photo)await db.collection("entries").doc(x.id).update({photo:true});else render();toast("Receipt photo saved");return true}
+  catch(e){toast("Couldn't save that photo. Your phone may be low on space.",1);return false}}
+async function removePhoto(x){try{await photoDel(x.id);dropThumb(x.id);await db.collection("entries").doc(x.id).update({photo:false});toast("Photo removed")}catch(e){toast("Couldn't remove the photo",1)}}
+let viewing=null;
+async function openViewer(x){const u=await thumbURL(x.id);if(!u){toast("Photo not found on this phone",1);return}
+  viewing=x;$("vImg").src=u;$("vTitle").textContent=x.category+" · "+gbp(x.amount);$("vSub").textContent=short(x.date);$("viewer").hidden=false;$("vDel").textContent="Remove photo";$("vDel").classList.remove("arm")}
+function closeViewer(){$("viewer").hidden=true;viewing=null}
+$("vClose").onclick=closeViewer;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("viewer").hidden)closeViewer()});
+$("vShare").onclick=async()=>{if(!viewing)return;const b=await photoGet(viewing.id);if(!b)return;
+  const f=new File([b],"receipt-"+viewing.date+"-"+viewing.category.replace(/[^a-z0-9]+/gi,"-").toLowerCase()+".jpg",{type:"image/jpeg"});
+  try{if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f]});else toast("Sharing isn't available here",1)}catch(e){}};
+$("vReplace").addEventListener("change",async e=>{const f=e.target.files[0];e.target.value="";if(f&&viewing){const x=viewing;if(await attachPhoto(x,f))openViewer(x)}});
+$("vDel").onclick=async()=>{const b=$("vDel");if(!b.classList.contains("arm")){b.classList.add("arm");b.textContent="Tap again to remove";return}
+  const x=viewing;closeViewer();if(x)await removePhoto(x)};
+const pending={};
 function buildRows(el,cats,type){
   cats.forEach((c,i)=>{const r=document.createElement("div");r.className="srow";
-    r.innerHTML=`<div class="n"><span></span><span class="t zero">£0.00</span></div><div class="m"><b style="background:${type==="sale"?SALE_COL[i]:"var(--spend)"}"></b></div><input id="in_${type}_${i}" inputmode="decimal" placeholder="£" autocomplete="off"><button type="button" class="plus ${type==="sale"?"s":"x"}">+</button>`;
+    r.innerHTML=`<div class="n"><span></span><span class="t zero">£0.00</span></div><div class="m"><b style="background:${type==="sale"?SALE_COL[SALE_CATS.indexOf(c)]:"var(--spend)"}"></b></div><input id="in_${type}_${i}" inputmode="decimal" placeholder="£" autocomplete="off"><button type="button" class="plus ${type==="sale"?"s":"x"}">+</button>`;
     r.querySelector(".n span").textContent=c;r.dataset.cat=c;
-    const inp=r.querySelector("input"),btn=r.querySelector("button");inp.setAttribute("aria-label","Add to "+c);btn.setAttribute("aria-label","Add to "+c);
+    if(type==="expense"){r.classList.add("x");const cam=document.createElement("label");cam.className="cam";cam.title="Attach receipt photo";
+      cam.innerHTML=CAM+'<input type="file" accept="image/*" aria-label="Attach receipt photo for '+c.replace(/"/g,"")+'">';
+      cam.querySelector("input").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
+        if(cam.dataset.u)URL.revokeObjectURL(cam.dataset.u);pending[c]=f;const u=URL.createObjectURL(f);cam.dataset.u=u;cam.style.backgroundImage="url("+u+")";cam.classList.add("has");
+        toast("Photo ready. Enter the amount and tap +");r.querySelector("input[inputmode]").focus()});
+      r.insertBefore(cam,r.querySelector(".plus"))}
+    const inp=r.querySelector("input[inputmode]"),btn=r.querySelector("button.plus");inp.setAttribute("aria-label","Add to "+c);btn.setAttribute("aria-label","Add to "+c);
     const go=()=>addEntry(type,c,inp,btn);btn.onclick=go;inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();go()}});
     el.appendChild(r)});
 }
@@ -383,7 +517,10 @@ async function addEntry(type,c,inp,btn){
   if(!(amt>0)){toast("Enter an amount for "+c+", like 45.50",1);inp.focus();return}
   if(!db||!canWrite){toast("Saving isn't available in this view",1);return}
   btn.disabled=true;
-  try{await db.collection("entries").add({type,date:day,amount:Math.round(amt*100)/100,category:c,note:"",created:Date.now()});inp.value="";toast(gbp(amt)+" added to "+c)}
+  try{const e=await db.collection("entries").add({type,date:day,amount:Math.round(amt*100)/100,category:c,note:"",created:Date.now()});inp.value="";
+    if(type==="expense"&&pending[c]){const f=pending[c];delete pending[c];const cam=btn.parentNode.querySelector(".cam");if(cam){if(cam.dataset.u)URL.revokeObjectURL(cam.dataset.u);cam.dataset.u="";cam.style.backgroundImage="";cam.classList.remove("has")}
+      if(await attachPhoto(e,f))toast(gbp(amt)+" added to "+c+" with receipt")}
+    else toast(gbp(amt)+" added to "+c)}
   catch(err){toast("Couldn't save that. Try again.",1)}
   btn.disabled=false}
 function setDay(d){day=d;$("dDate").value=d;renderDay();updateShare()}
@@ -466,7 +603,7 @@ function drawMix(sales,ts){
   const r=48,C=2*Math.PI*r;let off=0,arcs="",keys="";
   SALE_CATS.forEach((c,i)=>{const v=sum(sales,x=>x.category===c);
     if(v){const len=v/ts*C;arcs+=`<circle r="${r}" cx="66" cy="66" fill="none" stroke="${SALE_COL[i]}" stroke-width="16" stroke-dasharray="${Math.max(len-1.5,.5)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 66 66)"><title>${c}: ${gbp(v)}</title></circle>`;off+=len}
-    keys+=`<div class="key"><i style="background:${SALE_COL[i]}"></i><span>${c}</span><b>${v?Math.round(v/ts*100)+"%":"–"}</b></div>`});
+    if(v||visible("sale").includes(c))keys+=`<div class="key"><i style="background:${SALE_COL[i]}"></i><span>${c}</span><b>${v?Math.round(v/ts*100)+"%":"–"}</b></div>`});
   el.innerHTML=`<div class="mix"><svg viewBox="0 0 132 132" aria-hidden="true"><circle r="${r}" cx="66" cy="66" fill="none" stroke="var(--soft)" stroke-width="16"/>${arcs}<text x="66" y="68" text-anchor="middle" class="ctr1">${gbp0(ts)}</text><text x="66" y="82" text-anchor="middle" class="ctr2">SALES</text></svg><div class="keys">${keys}</div></div>`;
 }
 function expBars(ex,te){
@@ -479,10 +616,11 @@ function table(list){
   const el=$("dayTable"),days=[...new Set(list.map(x=>x.date))].sort().reverse();
   if(!days.length){el.innerHTML='<p class="empty">No days recorded in this period yet.</p>';return}
   const cell=(v,c="")=>v?`<td class="${c}">${gbp(v)}</td>`:`<td class="z">–</td>`;
-  let h='<table><thead><tr><th>Day</th>'+SALE_CATS.map(c=>`<th>${c}</th>`).join("")+'<th>Sales</th><th>Expenses</th><th>Profit</th></tr></thead><tbody>';
-  const tot=SALE_CATS.map(()=>0);let S=0,E=0;
+  const COLS=SALE_CATS.filter(c=>visible("sale").includes(c)||list.some(x=>x.type==="sale"&&x.category===c));
+  let h='<table><thead><tr><th>Day</th>'+COLS.map(c=>`<th>${c}</th>`).join("")+'<th>Sales</th><th>Expenses</th><th>Profit</th></tr></thead><tbody>';
+  const tot=COLS.map(()=>0);let S=0,E=0;
   days.forEach(d=>{const xs=list.filter(x=>x.date===d),s=sum(xs,x=>x.type==="sale"),e=sum(xs,x=>x.type==="expense");S+=s;E+=e;
-    h+=`<tr data-d="${d}"><td>${short(d)}</td>`;SALE_CATS.forEach((c,i)=>{const v=sum(xs,x=>x.type==="sale"&&x.category===c);tot[i]+=v;h+=cell(v)});
+    h+=`<tr data-d="${d}"><td>${short(d)}</td>`;COLS.forEach((c,i)=>{const v=sum(xs,x=>x.type==="sale"&&x.category===c);tot[i]+=v;h+=cell(v)});
     h+=cell(s,"st")+cell(e,"xt")+`<td class="${s-e<0?"neg":"pos"}">${gbp(s-e)}</td></tr>`});
   h+='</tbody><tfoot><tr><td>Total</td>'+tot.map(v=>cell(v)).join("")+cell(S,"st")+cell(E,"xt")+`<td class="${S-E<0?"neg":"pos"}">${gbp(S-E)}</td></tr></tfoot></table>`;
   el.innerHTML=h;el.querySelectorAll("tbody tr").forEach(r=>r.onclick=()=>{setDay(r.dataset.d);setView("day");window.scrollTo(0,0)});
@@ -491,8 +629,8 @@ function table(list){
 /* ---------- book ---------- */
 function renderBook(){
   const R=range(period),el=$("book");
-  const list=inRange(R.s,R.e).filter(x=>filter==="all"||x.type===filter);
-  if(!list.length){el.innerHTML=`<p class="empty">${entries.length?"Nothing recorded here for this period.":"No entries yet. Add your first sale or expense on the Daily sheet."}</p>`;return}
+  const list=inRange(R.s,R.e).filter(x=>filter==="all"||(filter==="receipts"?x.photo:x.type===filter));
+  if(!list.length){el.innerHTML=`<p class="empty">${entries.length?(filter==="receipts"?"No receipt photos in this period. Tap the camera next to an expense to add one.":"Nothing recorded here for this period."):"No entries yet. Add your first sale or expense on the Daily sheet."}</p>`;return}
   const days=new Map();[...list].sort((a,b)=>b.date.localeCompare(a.date)||(b.created||0)-(a.created||0)).forEach(x=>{if(!days.has(x.date))days.set(x.date,[]);days.get(x.date).push(x)});
   el.innerHTML="";
   days.forEach((xs,d)=>{const net=xs.reduce((a,x)=>a+(x.type==="sale"?x.amount:-x.amount),0);
@@ -503,8 +641,13 @@ function bookRow(x){
   const s=x.type==="sale",r=document.createElement("div");r.className="row";
   r.innerHTML=`<span class="ico ${s?"s":"x"}">${s?"+":"−"}</span><div class="t"><span class="c"></span><small></small></div><span class="amt">${s?"+":"−"}${gbp(x.amount)}</span><div class="acts"></div>`;
   r.querySelector(".c").textContent=x.category;
+  if(!s){const old=r.querySelector(".ico"),b=document.createElement(x.photo?"button":"label");b.className="ico x "+(x.photo?"ph":"add");
+    if(b.tagName==="BUTTON")b.type="button";
+    if(x.photo){b.setAttribute("aria-label","View receipt");b.onclick=()=>openViewer(x);thumbURL(x.id).then(u=>{if(u){const i=document.createElement("img");i.src=u;i.alt="";b.appendChild(i)}else{b.className="ico x add";b.innerHTML=CAM}})}
+    else{b.title="Add receipt photo";b.innerHTML=CAM+'<input type="file" accept="image/*" aria-label="Add receipt photo">';b.querySelector("input").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";if(f)attachPhoto(x,f)})}
+    old.replaceWith(b)}
   if(x.example){const t=document.createElement("span");t.className="tag";t.textContent="example";r.querySelector(".t").insertBefore(t,r.querySelector("small"))}
-  r.querySelector("small").textContent=x.note||(s?"Sale":"Expense");
+  r.querySelector("small").textContent=x.note||(s?"Sale":x.photo?"Expense · receipt attached":"Expense · no receipt");
   if(canWrite&&db){const acts=r.querySelector(".acts");
     const ed=document.createElement("button");ed.type="button";ed.className="mini";ed.textContent="Edit";
     ed.onclick=()=>{const amt=r.querySelector(".amt");const inp=document.createElement("input");inp.className="ed";inp.inputMode="decimal";inp.value=x.amount.toFixed(2);inp.setAttribute("aria-label","New amount");amt.replaceWith(inp);inp.focus();inp.select();
@@ -515,7 +658,7 @@ function bookRow(x){
       ok.onclick=save;inp.addEventListener("keydown",e=>{if(e.key==="Enter")save();if(e.key==="Escape")renderBook()});acts.append(ok,cancel)};
     const del=document.createElement("button");del.type="button";del.className="mini";del.textContent="Delete";
     del.onclick=async()=>{if(!del.classList.contains("arm")){del.classList.add("arm");del.textContent="Sure?";setTimeout(()=>{del.classList.remove("arm");del.textContent="Delete"},3000);return}
-      del.disabled=true;try{await db.collection("entries").doc(x.id).delete();toast("Entry deleted")}catch(e){del.disabled=false;toast("Couldn't delete. Try again.",1)}};
+      del.disabled=true;try{await db.collection("entries").doc(x.id).delete();if(x.photo){try{await photoDel(x.id);dropThumb(x.id)}catch(e){}}toast("Entry deleted")}catch(e){del.disabled=false;toast("Couldn't delete. Try again.",1)}};
     acts.append(ed,del)}
   return r;
 }
@@ -541,6 +684,124 @@ function sumText(){
 function updateShare(){$("waDay").href="https://wa.me/?text="+encodeURIComponent(dayText());$("waSum").href="https://wa.me/?text="+encodeURIComponent(sumText())}
 document.querySelectorAll(".cp").forEach(b=>b.onclick=()=>{const t=b.dataset.src==="day"?dayText():sumText();
   try{navigator.clipboard.writeText(t).then(()=>toast("Copied. Paste it into WhatsApp"),()=>toast("Couldn't copy on this device",1))}catch(e){toast("Couldn't copy on this device",1)}});
+
+/* ---------- manage tabs ---------- */
+let tk="sale";
+function openTabs(k){tk=k||"sale";$("tabsSheet").hidden=false;drawTabs()}
+function closeTabs(){$("tabsSheet").hidden=true;rebuildRows();render()}
+function drawTabs(){
+  document.querySelectorAll("[data-tk]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tk===tk));
+  $("tsFlagLbl").textContent=tk==="sale"?"Delivery app (counts in the apps %)":"Food stock (counts in food cost %)";
+  $("tsNew").placeholder=tk==="sale"?"e.g. Phone orders":"e.g. Booker";
+  $("tsHelp").textContent="Rename a tab by typing over its name. Removing a tab with past figures only hides it, so your totals stay correct.";
+  const el=$("tsList");el.innerHTML="";const mine=TABS.filter(t=>t.k===tk);
+  mine.forEach((t,i)=>{const used=entries.some(x=>x.type===tk&&x.category===t.n);
+    const r=document.createElement("div");r.className="titem"+(t.hid?" hid":"");
+    r.innerHTML=`<input class="tn" maxlength="40" aria-label="Tab name"><div class="tb"><button type="button" class="mini up" aria-label="Move up">↑</button><button type="button" class="mini dn" aria-label="Move down">↓</button><button type="button" class="mini rm"></button></div><div class="tf"><label class="chk"><input type="checkbox" class="fl"> ${tk==="sale"?"Delivery app":"Food stock"}</label><span></span></div>`;
+    const inp=r.querySelector(".tn");inp.value=t.n;r.querySelector(".fl").checked=!!t.f;
+    r.querySelector(".tf span").textContent=t.hid?"Hidden from the daily sheet":used?"Has past figures":"";
+    r.querySelector(".up").disabled=i===0;r.querySelector(".dn").disabled=i===mine.length-1;
+    const rm=r.querySelector(".rm");rm.textContent=t.hid?"Show":"Remove";
+    inp.addEventListener("change",()=>renameTab(t,inp));
+    r.querySelector(".fl").onchange=e=>{t.f=e.target.checked;saveTabs();syncTabs()};
+    r.querySelector(".up").onclick=()=>moveTab(t,-1);r.querySelector(".dn").onclick=()=>moveTab(t,1);
+    rm.onclick=()=>{if(t.hid){t.hid=false;saveTabs();drawTabs();toast(t.n+" is back on the daily sheet");return}
+      if(visible(tk).length<=1){toast("Keep at least one tab",1);return}
+      if(!rm.classList.contains("arm")){rm.classList.add("arm");rm.textContent="Sure?";setTimeout(()=>{rm.classList.remove("arm");rm.textContent="Remove"},3000);return}
+      if(used){t.hid=true;toast(t.n+" hidden. Past figures are kept")}else{TABS.splice(TABS.indexOf(t),1);toast(t.n+" removed")}
+      saveTabs();drawTabs()};
+    el.appendChild(r)});
+}
+function renameTab(t,inp){const nn=inp.value.trim().replace(/\s+/g," ");
+  if(!nn||nn===t.n){inp.value=t.n;return}
+  if(TABS.some(x=>x!==t&&x.k===t.k&&x.n.toLowerCase()===nn.toLowerCase())){toast("There's already a tab called "+nn,1);inp.value=t.n;return}
+  const old=t.n;entries.forEach(x=>{if(x.type===t.k&&x.category===old)x.category=nn});t.n=nn;
+  if(!saveStore()){entries.forEach(x=>{if(x.type===t.k&&x.category===nn)x.category=old});t.n=old;inp.value=old;return}
+  saveTabs();syncTabs();toast("Renamed to "+nn)}
+function moveTab(t,d){const mine=TABS.filter(x=>x.k===t.k),i=mine.indexOf(t),o=mine[i+d];if(!o)return;
+  const a=TABS.indexOf(t),b=TABS.indexOf(o);TABS[a]=o;TABS[b]=t;saveTabs();drawTabs()}
+function addTab(){const nn=$("tsNew").value.trim().replace(/\s+/g," ");
+  if(!nn){toast("Type a name for the new tab",1);$("tsNew").focus();return}
+  const ex=TABS.find(x=>x.k===tk&&x.n.toLowerCase()===nn.toLowerCase());
+  if(ex){if(ex.hid){ex.hid=false;saveTabs();drawTabs();toast(ex.n+" is back on the daily sheet")}else toast("There's already a tab called "+ex.n,1);return}
+  TABS.push({n:nn,k:tk,f:$("tsFlag").checked});saveTabs();syncTabs();$("tsNew").value="";$("tsFlag").checked=false;drawTabs();toast(nn+" added")}
+$("tsAdd").onclick=addTab;$("tabsBtn").onclick=()=>openTabs("sale");$("tsNew").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();addTab()}});
+$("tsDone").onclick=closeTabs;$("tabsSheet").addEventListener("click",e=>{if(e.target.id==="tabsSheet")closeTabs()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("tabsSheet").hidden)closeTabs()});
+document.querySelectorAll("[data-tk]").forEach(b=>b.onclick=()=>{tk=b.dataset.tk;drawTabs()});
+document.querySelectorAll(".edt").forEach(b=>b.onclick=()=>openTabs(b.dataset.k));
+
+/* ---------- import any sales report ---------- */
+const MKEY="shalimar-import-maps";
+let imRows=[],imHead=[],imName="";
+function getMaps(){try{return JSON.parse(localStorage.getItem(MKEY)||"{}")}catch(e){return{}}}
+function setMap(sig,m){const all=getMaps();all[sig]=m;try{localStorage.setItem(MKEY,JSON.stringify(all))}catch(e){}}
+const MON={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,sept:8,oct:9,nov:10,dec:11};
+function toDate(v){
+  if(v instanceof Date&&!isNaN(v))return iso(v);
+  if(typeof v==="number"&&v>30000&&v<80000){const d=new Date(Math.round((v-25569)*864e5));return iso(new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()))}
+  const t=String(v||"").trim();if(!t)return null;let m;
+  if(m=t.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/))return ok(+m[1],+m[2]-1,+m[3]);
+  if(m=t.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})/))return ok(yr(+m[3]),+m[2]-1,+m[1]);
+  if(m=t.match(/^(\d{1,2})(?:st|nd|rd|th)?[\s\-]+([A-Za-z]{3,9})[\s\-,]+(\d{2,4})/))return MON[m[2].slice(0,4).toLowerCase()]!=null||MON[m[2].slice(0,3).toLowerCase()]!=null?ok(yr(+m[3]),MON[m[2].slice(0,3).toLowerCase()],+m[1]):null;
+  if(m=t.match(/^(?:[A-Za-z]{3,9},?\s+)?([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})/))return MON[m[1].slice(0,3).toLowerCase()]!=null?ok(+m[3],MON[m[1].slice(0,3).toLowerCase()],+m[2]):null;
+  return null;
+  function yr(y){return y<100?2000+y:y}
+  function ok(y,mo,d){const x=new Date(y,mo,d);return x.getFullYear()===y&&x.getMonth()===mo&&x.getDate()===d&&y>2000&&y<2100?iso(x):null}}
+function toAmt(v){if(typeof v==="number")return v;let t=String(v||"").trim();if(!t)return null;
+  const neg=/^\(.*\)$/.test(t)||/^-/.test(t)||/-\s*$/.test(t);t=t.replace(/[^0-9.,]/g,"");
+  if(/,\d{2}$/.test(t)&&!/\.\d{2}$/.test(t))t=t.replace(/\./g,"").replace(",",".");else t=t.replace(/,/g,"");
+  const n=parseFloat(t);return isNaN(n)?null:(neg?-n:n)}
+async function readSheet(f){
+  if(/\.(xlsx|xls)$/i.test(f.name)){
+    if(!window.XLSX){await new Promise((res,rej)=>{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";sc.onload=res;sc.onerror=()=>rej(new Error("xlsx"));document.head.appendChild(sc)})}
+    const wb=XLSX.read(await f.arrayBuffer(),{type:"array",cellDates:true});const ws=wb.Sheets[wb.SheetNames[0]];
+    return XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:""})}
+  return parseCSV((await f.text()).replace(/^\uFEFF/,""))}
+function guess(head,rows,kind){
+  const re=kind==="date"?/date|day|time|created|placed|order.*at/i:/net|payout|total|amount|gross|value|sales|price|subtotal/i;
+  let best=-1,score=-1;
+  head.forEach((h,i)=>{const sample=rows.slice(0,20).map(r=>r[i]);
+    const hits=sample.filter(v=>kind==="date"?toDate(v):(toAmt(v)!=null&&!toDate(v))).length;
+    let sc=hits*2+(re.test(h)?10:0);if(kind==="amount"&&/net|payout/i.test(h))sc+=3;if(kind==="amount"&&/fee|commission|tax|vat|tip|qty|quantity|id|number/i.test(h))sc-=8;
+    if(sc>score){score=sc;best=i}});return best}
+function fillSel(sel,head,val){sel.innerHTML="";head.forEach((h,i)=>{const o=document.createElement("option");o.value=i;o.textContent=(h||"Column "+(i+1))+"  (e.g. "+String((imRows.find(r=>r[i]!=="")||[])[i]??"").slice(0,18)+")";sel.appendChild(o)});sel.value=String(val)}
+function fillTabs(val){const sel=$("imTab");sel.innerHTML="";
+  [["sale","Sales tabs"],["expense","Expense tabs"]].forEach(([k,l])=>{const g=document.createElement("optgroup");g.label=l;visible(k).forEach(n=>{const o=document.createElement("option");o.value=k+"|"+n;o.textContent=n;g.appendChild(o)});sel.appendChild(g)});
+  if(val&&[...sel.options].some(o=>o.value===val))sel.value=val}
+function daily(){const di=+$("imDate").value,ai=+$("imAmt").value,m=new Map();let skipped=0;
+  imRows.forEach(r=>{const d=toDate(r[di]),a=toAmt(r[ai]);if(!d||a==null){skipped++;return}m.set(d,(m.get(d)||0)+a)});
+  return{days:[...m.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([d,v])=>[d,Math.round(v*100)/100]),skipped}}
+function preview(){const {days,skipped}=daily(),[k,tab]=$("imTab").value.split("|");const el=$("imPrev");
+  if(!days.length){el.innerHTML='<span class="warn">No dates and amounts found with these columns. Try choosing different columns.</span>';$("imGo").disabled=true;return}
+  const tot=days.reduce((a,x)=>a+x[1],0);
+  el.innerHTML=`<div class="ph"><span>${days.length} day${days.length>1?"s":""} into ${tab.replace(/</g,"&lt;")}</span><span>${gbp(tot)}</span></div>`+
+    days.map(([d,v])=>{const rep=entries.some(x=>x.src==="import"&&x.type===k&&x.category===tab&&x.date===d);return `<div class="pr${rep?" rep":""}"><span>${short(d)}</span><b>${gbp(v)}</b></div>`}).join("")+
+    (skipped?`<span class="thelp">${skipped} row${skipped>1?"s":""} without a date or amount will be skipped (usually headings or totals).</span>`:"");
+  $("imGo").disabled=false}
+$("imFile").addEventListener("change",async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
+  let rows;try{rows=(await readSheet(f)).filter(r=>r.some(c=>String(c).trim()!==""))}catch(err){toast(err&&err.message==="xlsx"?"Excel files need internet the first time. Try again online, or save it as CSV.":"Couldn't read that file",1);return}
+  if(rows.length<2){toast("That file looks empty",1);return}
+  let h=0,bestT=0;for(let i=0;i<Math.min(20,rows.length-1);i++){const txt=rows[i].filter(c=>typeof c==="string"&&c.trim()&&toAmt(c)==null&&!toDate(c)).length;
+    const below=rows.slice(i+1,i+6).filter(r=>r.some(c=>toDate(c))&&r.some(c=>toAmt(c)!=null&&!toDate(c))).length;
+    const sc=txt+(below?100:0);if(txt>=2&&sc>bestT){bestT=sc;h=i}}
+  imHead=rows[h].map(c=>String(c).trim());imRows=rows.slice(h+1);imName=f.name;
+  const sig=imHead.join("|"),saved=getMaps()[sig];
+  fillSel($("imDate"),imHead,saved?saved.d:guess(imHead,imRows,"date"));fillSel($("imAmt"),imHead,saved?saved.a:guess(imHead,imRows,"amount"));let tg=saved&&saved.t;if(!tg){const hay=(f.name+" "+rows.slice(0,h+1).flat().join(" ")).toLowerCase().replace(/[^a-z]/g,"");const hit=visible("sale").find(n=>hay.includes(n.toLowerCase().replace(/[^a-z]/g,"").replace("eats","")));if(hit)tg="sale|"+hit}
+  fillTabs(tg);
+  $("imFileName").textContent=f.name+" · "+imRows.length+" rows"+(saved?" · using your settings from last time":"");
+  $("imMap").hidden=false;preview()});
+["imDate","imAmt","imTab"].forEach(id=>$(id).addEventListener("change",preview));
+$("imGo").onclick=()=>{const {days}=daily(),[k,tab]=$("imTab").value.split("|");if(!days.length)return;
+  const keep=entries.filter(x=>!(x.src==="import"&&x.type===k&&x.category===tab&&days.some(d=>d[0]===x.date)));const replaced=entries.length-keep.length;
+  const backup=entries;entries=keep;let n=0;
+  days.forEach(([d,v],i)=>{if(v>0){entries.push({id:uid(),type:k,date:d,amount:v,category:tab,note:"Imported from "+imName.slice(0,40),src:"import",created:Date.now()+i});n++}});
+  if(!saveStore()){entries=backup;return}
+  setMap(imHead.join("|"),{d:+$("imDate").value,a:+$("imAmt").value,t:$("imTab").value});
+  render();$("impSheet").hidden=true;$("imMap").hidden=true;toast(n+" days imported into "+tab+(replaced?" ("+replaced+" replaced)":""))};
+$("impBtn").onclick=()=>{$("impSheet").hidden=false;$("imMap").hidden=true};
+$("imClose").onclick=()=>$("impSheet").hidden=true;
+$("impSheet").addEventListener("click",e=>{if(e.target.id==="impSheet")$("impSheet").hidden=true});
 /* ---------- shell ---------- */
 function render(){remind();renderDay();renderSum();renderBook();updateShare()}
 function setView(v){$("app").dataset.view=v;document.querySelectorAll(".views button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===v));try{localStorage.setItem("till-view",v)}catch(e){}}
@@ -550,12 +811,13 @@ document.querySelectorAll(".filters button").forEach(b=>b.onclick=()=>{filter=b.
 $("dPrev").onclick=()=>setDay(addDays(day,-1));$("dNext").onclick=()=>setDay(addDays(day,1));$("dToday").onclick=()=>setDay(iso(new Date()));
 $("dDate").addEventListener("change",e=>{if(e.target.value)setDay(e.target.value)});
 $("dDate").value=day;
-buildRows($("saleRows"),SALE_CATS,"sale");buildRows($("expRows"),EXP_CATS,"expense");
+function rebuildRows(){syncTabs();$("saleRows").innerHTML="";$("expRows").innerHTML="";buildRows($("saleRows"),visible("sale"),"sale");buildRows($("expRows"),visible("expense"),"expense")}
+rebuildRows();
 function lastBackup(){try{return +localStorage.getItem(BKEY)||0}catch(e){return 0}}
 function remind(){const lb=lastBackup(),days=lb?Math.floor((Date.now()-lb)/864e5):null;
   const due=entries.length>0&&(lb===0||days>=7);$("exNote").hidden=!due;
   if(due)$("remindTxt").textContent=lb?"Last backup was "+days+" days ago. Back up your figures.":"Your figures are only on this phone. Back them up.";
-  $("bkInfo").textContent=(lb?"Last backup: "+new Date(lb).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})+". ":"No backup yet. ")+entries.length+" entries on this phone. Send a backup to yourself on WhatsApp or email once a week."}
+  $("bkInfo").textContent=(lb?"Last backup: "+new Date(lb).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})+". ":"No backup yet. ")+entries.length+" entries on this phone. Receipt photos are included. Send a backup to yourself on WhatsApp or email once a week."}
 async function shareFile(name,text,type){
   const file=new File([text],name,{type});
   try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:name});return true}}
@@ -564,7 +826,9 @@ async function shareFile(name,text,type){
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);return true}
 async function doBackup(){
   if(!entries.length){toast("Nothing to back up yet",1);return}
-  const data=JSON.stringify({app:"shalimar-till",version:1,saved:new Date().toISOString(),entries},null,1);
+  const photos={};
+  for(const x of entries.filter(e=>e.photo)){try{const b=await photoGet(x.id);if(b)photos[x.id]=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(b)})}catch(e){}}
+  const data=JSON.stringify({app:"shalimar-till",version:2,saved:new Date().toISOString(),entries,photos,tabs:TABS});
   const ok=await shareFile("shalimar-grill-backup-"+iso(new Date())+".json",data,"application/json");
   if(ok){try{localStorage.setItem(BKEY,String(Date.now()))}catch(e){}remind();toast("Backup ready. Keep the file somewhere safe")}}
 $("clearEx").onclick=doBackup;$("bkSave").onclick=doBackup;$("backupTop").onclick=()=>{setView("book");setTimeout(()=>$("backupCard").scrollIntoView({behavior:"smooth"}),50)};
@@ -578,24 +842,29 @@ function parseCSV(t){const rows=[];let row=[],f="",q=false;
     if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=c}
     else if(c==='"')q=true;else if(c===","){row.push(f);f=""}else if(c==="\n"||c==="\r"){if(c==="\r"&&t[i+1]==="\n")i++;row.push(f);rows.push(row);row=[];f=""}else f+=c}
   if(f!==""||row.length){row.push(f);rows.push(row)}return rows}
-function importData(text,name){
-  let incoming=[];
+async function importData(text,name){
+  let incoming=[],photos={};
   if(/\.json$/i.test(name)||text.trim().startsWith("{")||text.trim().startsWith("[")){
-    const j=JSON.parse(text);incoming=(Array.isArray(j)?j:j.entries||[]).filter(x=>x&&x.date&&x.type&&typeof x.amount==="number")}
+    const j=JSON.parse(text);photos=(j&&j.photos)||{};if(j&&Array.isArray(j.tabs))j.tabs.forEach(t=>{if(t&&t.n&&(t.k==="sale"||t.k==="expense")&&!TABS.some(x=>x.k===t.k&&x.n===t.n))TABS.push({n:t.n,k:t.k,f:!!t.f,hid:!!t.hid})});saveTabs();incoming=(Array.isArray(j)?j:j.entries||[]).filter(x=>x&&x.date&&x.type&&typeof x.amount==="number")}
   else{const r=parseCSV(text.trim());r.shift();
     incoming=r.filter(x=>x.length>=4&&/^\d{4}-\d{2}-\d{2}$/.test(x[0])).map((x,i)=>({date:x[0],type:/^sale/i.test(x[1])?"sale":"expense",category:x[2],amount:Math.round(parseFloat(x[3])*100)/100,note:x[4]||"",created:Date.now()+i})).filter(x=>x.amount>0)}
   const sig=x=>[x.date,x.type,x.category,x.amount.toFixed(2),x.created||""].join("|");
-  const have=new Set(entries.map(sig));let added=0;
-  incoming.forEach(x=>{if(x.example)return;const e={id:x.id&&!entries.some(y=>y.id===x.id)?x.id:uid(),type:x.type,date:x.date,amount:x.amount,category:x.category,note:x.note||"",created:x.created||Date.now()};
-    if(!have.has(sig(e))){entries.push(e);have.add(sig(e));added++}});
-  return added}
+  const have=new Map(entries.map(e=>[sig(e),e]));let added=0,pics=0;
+  for(const x of incoming){if(x.example)continue;
+    let e=have.get(sig({...x,created:x.created||""}));
+    if(!e){e={id:x.id&&!entries.some(y=>y.id===x.id)?x.id:uid(),type:x.type,date:x.date,amount:x.amount,category:x.category,note:x.note||"",created:x.created||Date.now(),...(x.src?{src:x.src}:{})};entries.push(e);have.set(sig(e),e);added++}
+    const p=x.id&&photos[x.id];
+    if(p&&!e.photo){try{const blob=await (await fetch(p)).blob();await photoPut(e.id,blob);e.photo=true;pics++}catch(err){}}}
+  return{added,pics}}
 $("bkLoad").addEventListener("change",async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
-  try{const n=importData(await f.text(),f.name);if(n&&!saveStore())return;render();toast(n?n+" entries restored":"Nothing new in that file. You already have these entries.",!n)}
+  try{const {added:n,pics}=await importData(await f.text(),f.name);if((n||pics)&&!saveStore())return;rebuildRows();render();
+    toast(n||pics?(n+" entries"+(pics?" and "+pics+" receipt photos":"")+" restored"):"Nothing new in that file. You already have these entries.",!(n||pics))}
   catch(err){toast("That file isn't a Shalimar Grill backup or CSV",1)}});
 function lockInputs(){document.querySelectorAll(".srow input,.srow .plus").forEach(x=>x.hidden=true)}
 try{const v=localStorage.getItem("till-view");if(v)setView(v)}catch(e){}
 
 entries=loadStore();
+rebuildRows();
 render();
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
