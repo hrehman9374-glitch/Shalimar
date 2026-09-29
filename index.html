@@ -145,6 +145,11 @@ button.ico{border:0;padding:0;cursor:pointer;overflow:hidden;position:relative}
 .trow2{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
 .trow2 input{font:500 .95rem var(--body);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px;min-width:0}
 .thelp{margin:0;font-size:.78rem;color:var(--muted)}
+.tabf{font:600 .92rem var(--body);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%;min-width:0}
+.bsum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch}
+.bsum .bs{background:var(--soft);border-radius:12px;padding:10px;display:grid;gap:2px;min-width:0}
+.bsum .bs b{font:600 1rem var(--mono);overflow-wrap:anywhere}
+.bsum .bbtn{grid-column:1/-1}
 .imgrid{display:grid;gap:8px}
 .imgrid select{font:500 .95rem var(--body);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%;min-width:0}
 .impv{background:var(--soft);border-radius:12px;padding:10px 12px;display:grid;gap:4px;font-size:.84rem;max-height:220px;overflow-y:auto}
@@ -220,7 +225,7 @@ button.ico{border:0;padding:0;cursor:pointer;overflow:hidden;position:relative}
 .ico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font:700 .8rem var(--display)}
 .ico.s{background:color-mix(in srgb,var(--sale) 14%,transparent);color:var(--sale)}
 .ico.x{background:color-mix(in srgb,var(--spend) 14%,transparent);color:var(--spend)}
-.row .t{min-width:0;font-weight:600;font-size:.9rem;overflow-wrap:anywhere}
+.row .t{min-width:0;font-weight:600;font-size:.9rem;overflow-wrap:break-word}
 .row .t small{display:block;font-weight:500;color:var(--muted);font-size:.75rem}
 .row .amt{font:600 .9rem var(--mono);font-variant-numeric:tabular-nums}
 .row .acts{display:flex;gap:4px}
@@ -349,6 +354,8 @@ button.ico{border:0;padding:0;cursor:pointer;overflow:hidden;position:relative}
         <button type="button" data-f="receipts" aria-pressed="false">Receipts</button>
       </div>
     </div>
+    <select id="tabF" class="tabf" aria-label="Show one tab or supplier"></select>
+    <div class="bsum" id="bookSum" hidden></div>
     <div id="book"><p class="empty">Loading your entries…</p></div>
   </section>
 
@@ -629,8 +636,10 @@ function table(list){
 /* ---------- book ---------- */
 function renderBook(){
   const R=range(period),el=$("book");
-  const list=inRange(R.s,R.e).filter(x=>filter==="all"||(filter==="receipts"?x.photo:x.type===filter));
-  if(!list.length){el.innerHTML=`<p class="empty">${entries.length?(filter==="receipts"?"No receipt photos in this period. Tap the camera next to an expense to add one.":"Nothing recorded here for this period."):"No entries yet. Add your first sale or expense on the Daily sheet."}</p>`;return}
+  fillTabFilter();
+  const list=inRange(R.s,R.e).filter(x=>filter==="all"||(filter==="receipts"?x.photo:x.type===filter)).filter(x=>!tabFilter||(x.type+"|"+x.category)===tabFilter);
+  bookSummary(list);
+  if(!list.length){el.innerHTML=`<p class="empty">${entries.length?(tabFilter?"Nothing for "+tabFilter.split("|")[1]+" in this period. Try another month at the top.":filter==="receipts"?"No receipt photos in this period. Tap the camera next to an expense to add one.":"Nothing recorded here for this period."):"No entries yet. Add your first sale or expense on the Daily sheet."}</p>`;return}
   const days=new Map();[...list].sort((a,b)=>b.date.localeCompare(a.date)||(b.created||0)-(a.created||0)).forEach(x=>{if(!days.has(x.date))days.set(x.date,[]);days.get(x.date).push(x)});
   el.innerHTML="";
   days.forEach((xs,d)=>{const net=xs.reduce((a,x)=>a+(x.type==="sale"?x.amount:-x.amount),0);
@@ -802,6 +811,23 @@ $("imGo").onclick=()=>{const {days}=daily(),[k,tab]=$("imTab").value.split("|");
 $("impBtn").onclick=()=>{$("impSheet").hidden=false;$("imMap").hidden=true};
 $("imClose").onclick=()=>$("impSheet").hidden=true;
 $("impSheet").addEventListener("click",e=>{if(e.target.id==="impSheet")$("impSheet").hidden=true});
+
+/* ---------- day book: one tab / supplier ---------- */
+let tabFilter="";
+function fillTabFilter(){const sel=$("tabF"),cur=tabFilter;sel.innerHTML='<option value="">All tabs and suppliers</option>';
+  [["expense","Expenses (suppliers)"],["sale","Sales"]].forEach(([k,l])=>{const g=document.createElement("optgroup");g.label=l;
+    (k==="sale"?SALE_CATS:EXP_CATS).forEach(n=>{if(!visible(k).includes(n)&&!entries.some(x=>x.type===k&&x.category===n))return;const o=document.createElement("option");o.value=k+"|"+n;o.textContent=n;g.appendChild(o)});sel.appendChild(g)});
+  sel.value=[...sel.options].some(o=>o.value===cur)?cur:"";tabFilter=sel.value}
+$("tabF").addEventListener("change",e=>{tabFilter=e.target.value;renderBook()});
+function bookSummary(list){const el=$("bookSum");if(!tabFilter){el.hidden=true;return}
+  const [k,n]=tabFilter.split("|"),tot=list.reduce((a,x)=>a+x.amount,0),bills=list.filter(x=>x.photo);
+  el.hidden=false;el.innerHTML=`<div class="bs"><span class="lbl">${k==="sale"?"Total sales":"Total spent"}</span><b>${gbp(tot)}</b></div><div class="bs"><span class="lbl">Entries</span><b>${list.length}</b></div><div class="bs"><span class="lbl">Bill photos</span><b>${bills.length}</b></div>`+
+    (bills.length?`<button type="button" class="bbtn" id="shareBills">Share all ${bills.length} bill${bills.length>1?"s":""}</button>`:"");
+  if(bills.length)$("shareBills").onclick=async()=>{const files=[];const R=range(period);
+    for(const x of bills.sort((a,b)=>a.date.localeCompare(b.date))){try{const b=await photoGet(x.id);if(b)files.push(new File([b],x.date+"-"+n.replace(/[^a-z0-9]+/gi,"-").toLowerCase()+"-"+x.amount.toFixed(2)+".jpg",{type:"image/jpeg"}))}catch(e){}}
+    if(!files.length){toast("No bill photos found on this phone",1);return}
+    try{if(navigator.canShare&&navigator.canShare({files})){await navigator.share({files,title:n+" bills "+fmtD(R.s)+" – "+fmtD(R.e),text:n+" bills "+fmtD(R.s)+" – "+fmtD(R.e)+": "+files.length+" bills, total "+gbp(tot)})}else toast("Sharing isn't available here",1)}catch(e){}};
+}
 /* ---------- shell ---------- */
 function render(){remind();renderDay();renderSum();renderBook();updateShare()}
 function setView(v){$("app").dataset.view=v;document.querySelectorAll(".views button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===v));try{localStorage.setItem("till-view",v)}catch(e){}}
