@@ -55,7 +55,7 @@ img{max-width:100%}
 .filepick{position:relative;overflow:hidden}
 .filepick input{position:absolute;inset:0;opacity:0;cursor:pointer}
 body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--body)}
-.wrap{max-width:900px;margin:0 auto;padding-inline:16px;padding-block:14px 90px;display:grid;gap:14px}
+.wrap{max-width:900px;margin:0 auto;padding-inline:16px;padding-block:14px 90px;display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
 header{display:flex;justify-content:space-between;align-items:center;gap:10px}
 h1{font:700 1.25rem/1.1 var(--display);margin:0;letter-spacing:-.01em}
 h1 i{font-style:normal;color:var(--accent)}
@@ -96,7 +96,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .hsplit .lbl{color:var(--hero-muted)}
 .hsplit .num{font-size:1.05rem}
 .hmeta{display:flex;flex-wrap:wrap;gap:6px}
-.hmeta .chip{background:var(--hero-line);color:var(--hero-ink)}
+.hmeta .chip{background:var(--hero-line);color:var(--hero-ink);white-space:normal}
 .hmeta .chip.up{color:#5FD8A4} .hmeta .chip.down{color:#FF8A80}
 .meter{height:6px;border-radius:3px;background:var(--hero-line);overflow:hidden;display:flex}
 .meter b{display:block;height:100%}
@@ -119,14 +119,16 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .plus:disabled{opacity:.5}
 .srow.x{grid-template-columns:minmax(0,1fr) 4.6rem auto auto;grid-template-areas:"n i c b" "m i c b"}
 .cam{grid-area:c;position:relative;width:38px;height:38px;border-radius:10px;border:1px dashed var(--line);background:var(--soft);color:var(--muted);display:grid;place-items:center;cursor:pointer;overflow:hidden;background-size:cover;background-position:center}
-.cam input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.cam input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 .cam.has{border:2px solid var(--spend);color:transparent}
 .cam.has svg{opacity:0}
 button.ico{border:0;padding:0;cursor:pointer;overflow:hidden;position:relative}
 .ico.add{background:var(--soft);color:var(--muted);border:1px dashed var(--line)}
 .ico img{width:100%;height:100%;object-fit:cover;display:block}
 .ico.ph{outline:2px solid var(--spend);outline-offset:-2px}
-.ico input{position:absolute;inset:0;opacity:0;cursor:pointer}
+label.ico,.ico{position:relative;overflow:hidden}
+label.ico{cursor:pointer}
+.ico input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 .edt{font:600 .7rem var(--body);background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:3px 8px;margin-left:6px;cursor:pointer;vertical-align:2px}
 .msheet{position:fixed;inset:0;z-index:15;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
 .mpanel{background:var(--card);color:var(--ink);width:100%;max-width:560px;max-height:88%;overflow-y:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));display:grid;gap:12px;align-content:start}
@@ -171,7 +173,7 @@ button.ico{border:0;padding:0;cursor:pointer;overflow:hidden;position:relative}
 
 /* summary */
 .pbar{display:grid;gap:8px}
-.periods{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.periods{display:flex;flex-wrap:wrap;gap:6px}
 .periods button{flex:none;font:600 .8rem var(--body);border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 12px;border-radius:999px;cursor:pointer}
 .periods button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .range{font-size:.8rem;color:var(--muted);margin:0}
@@ -893,7 +895,7 @@ entries=loadStore();
 rebuildRows();
 render();
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
-if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body>
 </html>
