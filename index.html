@@ -744,7 +744,7 @@ function bookRow(x){
       del.disabled=true;try{await db.collection("entries").doc(x.id).delete();if(x.photo){try{await photoDel(x.id);dropThumb(x.id)}catch(e){}}toast("Entry deleted")}catch(e){del.disabled=false;toast("Couldn't delete. Try again.",1)}};
     if(x.paid===false){const mp=document.createElement("button");mp.type="button";mp.className="mini pay";mp.textContent="Mark paid";
       mp.onclick=()=>{if(!mp.classList.contains("arm")){mp.classList.add("arm");mp.textContent="Confirm";setTimeout(()=>{if(mp.isConnected){mp.classList.remove("arm");mp.textContent="Mark paid"}},3000);return}markPaid(x)};acts.append(mp)}
-    else if(x.billDate){const up=document.createElement("button");up.type="button";up.className="mini";up.textContent="Not paid";up.title="Move back to Not paid yet";
+    else if(x.type==="expense"&&x.category!==WAGES){const up=document.createElement("button");up.type="button";up.className="mini";up.textContent="Not paid";up.title="Change this bill to not paid";
       up.onclick=()=>{if(!up.classList.contains("arm")){up.classList.add("arm");up.textContent="Sure?";setTimeout(()=>{if(up.isConnected){up.classList.remove("arm");up.textContent="Not paid"}},3000);return}markUnpaid(x)};acts.append(up)}
     acts.append(ed,del)}
   return r;
@@ -934,7 +934,7 @@ async function markPaid(x){const today=iso(new Date());
   try{await db.collection("entries").doc(x.id).update({paid:true,billDate:x.billDate||x.date,paidOn:today,date:today});toast(gbp(x.amount)+" to "+x.category+" marked as paid. Counted in today's figures")}
   catch(e){toast("Couldn't update that bill. Try again.",1)}}
 async function markUnpaid(x){
-  try{await db.collection("entries").doc(x.id).update({paid:false,date:x.billDate||x.date,billDate:undefined,paidOn:undefined});toast(x.category+" bill moved back to Not paid yet")}
+  try{await db.collection("entries").doc(x.id).update({paid:false,date:x.billDate||x.date,billDate:undefined,paidOn:undefined});toast(gbp(x.amount)+" to "+x.category+" changed to not paid. It's in Not paid yet")}
   catch(e){toast("Couldn't update that bill. Try again.",1)}}
 function renderPayables(){const ol=owedList(),el=$("payList"),tot=ol.reduce((a,x)=>a+x.amount,0);
   const so=$("sumOwe");so.hidden=!ol.length;if(ol.length){const n=new Set(ol.map(x=>x.category)).size;so.innerHTML=`Not paid yet: <b>${gbp(tot)}</b> owed to ${n} supplier${n>1?"s":""}. Not included in these figures until you mark them as paid. <u>View</u>`}
