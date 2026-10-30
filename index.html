@@ -215,7 +215,7 @@ table.wk td:first-child,table.wk th:first-child{position:static}
 .kpi .chip{white-space:normal;justify-self:start;max-width:100%;line-height:1.3}
 .kpi.main{background:var(--hero);border-color:var(--hero);color:var(--hero-ink)}
 .kpi.main .lbl{color:var(--hero-muted)}
-.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border-radius:16px;overflow:hidden;border:1px solid var(--line)}
 .stat{background:var(--card);padding:12px;display:grid;gap:3px;min-width:0}
 .stat b{font:600 .95rem var(--mono);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .stat small{color:var(--muted);font-size:.75rem}
@@ -375,6 +375,8 @@ table.wk td:first-child,table.wk th:first-child{position:static}
     <div class="stat"><span class="lbl">Best day</span><b id="sBest">–</b><small id="sBestD">–</small></div>
     <div class="stat"><span class="lbl">Delivery apps</span><b id="sApps">–</b><small>of sales from delivery app tabs</small></div>
     <div class="stat"><span class="lbl">Food cost</span><b id="sFood">–</b><small>food stock tabs as % of sales</small></div>
+    <div class="stat"><span class="lbl">Wages</span><b id="sWage">–</b><small id="sWageS">wages as % of sales</small></div>
+    <div class="stat"><span class="lbl">Food + wages</span><b id="sPrime">–</b><small>main costs as % of sales</small></div>
   </section>
 
   <section class="card" data-in="sum">
@@ -615,6 +617,7 @@ function renderDay(){
   const chip=(txt,cls)=>{const c=document.createElement("span");c.className="chip "+(cls||"");c.textContent=txt;meta.appendChild(c)};
   if(ts&&ls){const d=(ts-ls)/ls*100;chip((d>=0?"▲ ":"▼ ")+Math.abs(d).toFixed(0)+"% sales vs last "+parse(day).toLocaleDateString("en-GB",{weekday:"short"}),d>=0?"up":"down")}
   if(ts)chip("Margin "+(tp/ts*100).toFixed(0)+"%");
+  {const w=sum(xs,x=>x.type==="expense"&&x.category===WAGES);if(ts&&w)chip("Wages "+Math.round(w/ts*100)+"% of sales")}
   if(ts){const a=sum(xs,x=>x.type==="sale"&&APPS.includes(x.category));chip("Apps "+Math.round(a/ts*100)+"% · Counter "+Math.round((ts-a)/ts*100)+"%")}
   {const ol=owedList();if(ol.length)chip(gbp0(ol.reduce((a,x)=>a+x.amount,0))+" not paid to suppliers","owe")}
   if(!xs.length)chip(loaded?"Nothing added for this day yet":"Loading your figures…");
@@ -651,7 +654,10 @@ function renderSum(){
   let best=null;byDay.forEach((v,k)=>{if(!best||v>best[1])best=[k,v]});
   $("sBest").textContent=best?gbp0(best[1]):"–";$("sBestD").textContent=best?short(best[0]):"No sales yet";
   $("sApps").textContent=ts?Math.round(sum(list,x=>x.type==="sale"&&APPS.includes(x.category))/ts*100)+"%":"–";
-  $("sFood").textContent=ts?Math.round(sum(list,x=>x.type==="expense"&&FOOD.includes(x.category))/ts*100)+"%":"–";
+  const foodT=sum(list,x=>x.type==="expense"&&FOOD.includes(x.category)),wageT=sum(list,x=>x.type==="expense"&&x.category===WAGES);
+  $("sFood").textContent=ts?Math.round(foodT/ts*100)+"%":"–";
+  $("sWage").textContent=ts?Math.round(wageT/ts*100)+"%":"–";$("sWageS").textContent=wageT?gbp0(wageT)+" wages as % of sales":"wages as % of sales";
+  $("sPrime").textContent=ts?Math.round((foodT+wageT)/ts*100)+"%":"–";
   // chart
   const b=[];
   if(R.unit==="day"){for(let d=new Date(R.s);d<=R.e;d.setDate(d.getDate()+1))b.push({k:iso(d),l:String(d.getDate()),s:0,x:0})}
@@ -766,6 +772,7 @@ function sumText(){
   t+="\n*Expenses: "+gbp(te)+"*\n";
   EXP_CATS.forEach(c=>{const v=sum(list,x=>x.type==="expense"&&x.category===c);if(v){t+="• "+c+": "+gbp(v)+"\n";if(c===WAGES)STAFF.forEach(p=>{const w=sum(list,x=>x.category===WAGES&&x.staff===p.n),h=list.filter(x=>x.category===WAGES&&x.staff===p.n).reduce((a,x)=>a+(x.hours||0),0);if(w)t+="   – "+p.n+": "+(h?fmtH(h)+" · ":"")+gbp(w)+"\n"})}});
   t+="\n*Profit: "+gbp(ts-te)+"*"+(ts?" ("+((ts-te)/ts*100).toFixed(1)+"% margin)":"");
+  {const w=sum(list,x=>x.type==="expense"&&x.category===WAGES);if(ts&&w)t+="\nWages: "+Math.round(w/ts*100)+"% of sales"}
   const nd=new Set(list.filter(x=>x.type==="sale").map(x=>x.date)).size;if(nd)t+="\nAverage sales per day: "+gbp(ts/nd);
   return t+owedText()}
 function updateShare(){$("waDay").href="https://wa.me/?text="+encodeURIComponent(dayText());$("waSum").href="https://wa.me/?text="+encodeURIComponent(sumText())}
@@ -1015,9 +1022,11 @@ function renderStaff(){
   const rows=people.map(p=>{const xs=wk.filter(x=>(x.staff||"Other")===p),h=xs.reduce((a,x)=>a+(x.hours||0),0),pay=xs.reduce((a,x)=>a+x.amount,0),days=new Set(xs.filter(x=>x.hours).map(x=>x.date)).size;H+=h;P+=pay;
     return `<tr><td>${p.replace(/</g,"&lt;")}</td><td>${days||"–"}</td><td>${h?fmtH(h):"–"}</td><td>${gbp(pay)}</td></tr>`}).join("");
   el.innerHTML=`<div class="lbl" style="margin-bottom:6px">This week · ${short(ws)} – ${short(we)}</div><div class="tbl" style="margin:0;padding:0"><table class="wk"><thead><tr><th>Staff</th><th>Days</th><th>Hours</th><th>Pay</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td>Total</td><td></td><td>${fmtH(H)}</td><td>${gbp(P)}</td></tr></tfoot></table></div>`;
+  {const wsales=sum(entries.filter(x=>x.date>=ws&&x.date<=we),x=>x.type==="sale");const pct=document.createElement("p");pct.className="thelp";pct.style.marginTop="6px";pct.textContent=wsales?"Wages are "+Math.round(P/wsales*100)+"% of this week's sales ("+gbp0(wsales)+").":"No sales entered this week yet, so no wages % to show.";el.appendChild(pct)}
   let t="*Shalimar Grill wages*\n"+short(ws)+" – "+short(we)+"\n\n";
   people.forEach(p=>{const xs=wk.filter(x=>(x.staff||"Other")===p),h=xs.reduce((a,x)=>a+(x.hours||0),0),pay=xs.reduce((a,x)=>a+x.amount,0);t+="• "+p+": "+(h?fmtH(h)+" · ":"")+gbp(pay)+"\n"});
   t+="\n*Total: "+fmtH(H)+" · "+gbp(P)+"*";
+  {const wsales=sum(entries.filter(x=>x.date>=ws&&x.date<=we),x=>x.type==="sale");if(wsales)t+="\nWages are "+Math.round(P/wsales*100)+"% of sales ("+gbp0(wsales)+")"}
   const a=$("waWk");a.hidden=false;a.href="https://wa.me/?text="+encodeURIComponent(t)}
 rebuildRows();
 function lastBackup(){try{return +localStorage.getItem(BKEY)||0}catch(e){return 0}}
