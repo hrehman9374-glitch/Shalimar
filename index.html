@@ -22,7 +22,7 @@
   --bg:#EEF0F3; --card:#FFFFFF; --ink:#14171C; --muted:#687080; --line:#E1E4EA; --soft:#F5F6F8;
   --hero:#15110F; --hero-ink:#F4F5F7; --hero-muted:#9AA1AE; --hero-line:#34292A;
   --accent:#D7261E; --gold:#D9A441;
-  --sale:#138A6B; --spend:#D0543A; --good:#14875A; --bad:#C8352C;
+  --sale:#138A6B; --spend:#D0543A; --owe:#B26A00; --good:#14875A; --bad:#C8352C;
   --c1:#138A6B; --c2:#E8A317; --c3:#5B5BD6; --c4:#2F80C2; --c5:#C2477C; --c6:#8A6D3B; --c7:#0F7C8C; --c8:#6B7280;
   --shadow:0 1px 2px rgba(20,23,28,.05),0 6px 20px rgba(20,23,28,.06);
   --display:"Sora",system-ui,sans-serif;
@@ -32,13 +32,13 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0D0F12; --card:#171A1F; --ink:#EDEFF2; --muted:#8C94A2; --line:#262A31; --soft:#1E2127;
   --hero:#1E1714; --hero-ink:#F4F5F7; --hero-muted:#9AA1AE; --hero-line:#3E3031;
-  --accent:#FF4A3D; --gold:#E3B04F; --sale:#3CC39C; --spend:#EE7A5F; --good:#48C98A; --bad:#F2706A;
+  --accent:#FF4A3D; --gold:#E3B04F; --sale:#3CC39C; --spend:#EE7A5F; --owe:#F2B537; --good:#48C98A; --bad:#F2706A;
   --c1:#3CC39C; --c2:#F2B537; --c3:#8F8CF2; --c4:#5BA8E8; --c5:#E57AA6; --c6:#C9A36B; --c7:#3FB7C7; --c8:#9CA3AF;
   --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0D0F12; --card:#171A1F; --ink:#EDEFF2; --muted:#8C94A2; --line:#262A31; --soft:#1E2127;
   --hero:#1E1714; --hero-ink:#F4F5F7; --hero-muted:#9AA1AE; --hero-line:#3E3031;
-  --accent:#FF4A3D; --gold:#E3B04F; --sale:#3CC39C; --spend:#EE7A5F; --good:#48C98A; --bad:#F2706A;
+  --accent:#FF4A3D; --gold:#E3B04F; --sale:#3CC39C; --spend:#EE7A5F; --owe:#F2B537; --good:#48C98A; --bad:#F2706A;
   --c1:#3CC39C; --c2:#F2B537; --c3:#8F8CF2; --c4:#5BA8E8; --c5:#E57AA6; --c6:#C9A36B; --c7:#3FB7C7; --c8:#9CA3AF;
   --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}
 *{box-sizing:border-box}
@@ -96,6 +96,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .hsplit .lbl{color:var(--hero-muted)}
 .hsplit .num{font-size:1.05rem}
 .hmeta{display:flex;flex-wrap:wrap;gap:6px}
+.hmeta .chip.owe{color:#F2B537}
 .hmeta .chip{background:var(--hero-line);color:var(--hero-ink);white-space:normal}
 .hmeta .chip.up{color:#5FD8A4} .hmeta .chip.down{color:#FF8A80}
 .meter{height:6px;border-radius:3px;background:var(--hero-line);overflow:hidden;display:flex}
@@ -117,7 +118,20 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .plus{grid-area:b;width:38px;height:38px;border:0;border-radius:10px;cursor:pointer;color:#fff;font:600 1.25rem/1 var(--body)}
 .plus.s{background:var(--sale)} .plus.x{background:var(--spend)}
 .plus:disabled{opacity:.5}
-.srow.x{grid-template-columns:minmax(0,1fr) 4.6rem auto auto;grid-template-areas:"n i c b" "m i c b"}
+.srow.x{grid-template-columns:minmax(0,1fr) 4.6rem auto auto;grid-template-areas:"n i c b" "m i c b" "p i c b"}
+.srow .pw{grid-area:p;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;min-width:0}
+.pd{font:700 .68rem var(--body);border-radius:999px;padding:3px 9px;cursor:pointer;border:1px solid var(--line);background:var(--soft);color:var(--good)}
+.pd[aria-pressed="false"]{background:var(--owe);border-color:var(--owe);color:#fff}
+.ow{font:600 .7rem var(--mono);color:var(--owe)}
+.paycard .pgrp{border-top:1px solid var(--line);padding:8px 0}
+.paycard .pgrp:first-of-type{border-top:0}
+.pgh{display:flex;justify-content:space-between;gap:8px;font-weight:700;font-size:.92rem}
+.pgh b{font:600 .92rem var(--mono);color:var(--owe)}
+.pbill{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:5px 0 0;font-size:.84rem;color:var(--muted)}
+.pbill b{font:600 .84rem var(--mono);color:var(--ink)}
+.mini.pay{border-color:var(--good);color:var(--good)}
+.mini.pay.arm{background:var(--good);color:#fff}
+.tag.owe{background:var(--owe);color:#fff}
 .cam{grid-area:c;position:relative;width:38px;height:38px;border-radius:10px;border:1px dashed var(--line);background:var(--soft);color:var(--muted);display:grid;place-items:center;cursor:pointer;overflow:hidden;background-size:cover;background-position:center}
 .cam input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 .cam.has{border:2px solid var(--spend);color:transparent}
@@ -198,6 +212,7 @@ table.wk td:first-child,table.wk th:first-child{position:static}
 .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;display:grid;gap:6px;box-shadow:var(--shadow);min-width:0}
 .kpi .num{font-size:clamp(1.05rem,4vw,1.4rem);overflow-wrap:anywhere}
+.kpi .chip{white-space:normal;justify-self:start;max-width:100%;line-height:1.3}
 .kpi.main{background:var(--hero);border-color:var(--hero);color:var(--hero-ink)}
 .kpi.main .lbl{color:var(--hero-muted)}
 .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border-radius:16px;overflow:hidden;border:1px solid var(--line)}
@@ -248,7 +263,7 @@ table.wk td:first-child,table.wk th:first-child{position:static}
 .row .t{min-width:0;font-weight:600;font-size:.9rem;overflow-wrap:break-word}
 .row .t small{display:block;font-weight:500;color:var(--muted);font-size:.75rem}
 .row .amt{font:600 .9rem var(--mono);font-variant-numeric:tabular-nums}
-.row .acts{display:flex;gap:4px}
+.row .acts{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;max-width:9.5rem}
 .mini{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 8px;cursor:pointer;font:600 .74rem var(--body)}
 .mini.arm{color:var(--bad);border-color:var(--bad)}
 .mini.ok{color:var(--card);background:var(--ink);border-color:var(--ink)}
@@ -262,6 +277,8 @@ table.wk td:first-child,table.wk th:first-child{position:static}
 .wa::before{content:"";width:18px;height:18px;flex:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.2c0-.1-.2-.2-.4-.3z'/%3E%3C/svg%3E") center/contain no-repeat}
 .wa:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .hero .cp{flex:none}
+.owenote{font:600 .85rem var(--body);text-align:left;cursor:pointer;width:100%;color:var(--ink)}
+.owenote b{color:var(--owe);font-family:var(--mono)}
 .toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);font:600 .85rem var(--body);padding:10px 16px;border-radius:12px;max-width:calc(100% - 32px);z-index:10;transition:opacity .2s,transform .2s;box-shadow:0 8px 24px rgba(0,0,0,.2)}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 .toast.err{background:var(--bad);color:#fff}
@@ -318,6 +335,12 @@ table.wk td:first-child,table.wk th:first-child{position:static}
     </section>
   </div>
 
+  <section class="card paycard" data-in="day" id="payCard">
+    <div class="ehead"><h2>Not paid yet</h2><span class="num" id="payTot" style="color:var(--owe)">£0.00</span></div>
+    <p class="thelp" id="payHelp">Bills you still owe suppliers. They don't count in your expenses or profit until you mark them as paid.</p>
+    <div id="payList"></div>
+  </section>
+
   <section class="card" data-in="day">
     <div class="ehead"><h2>Wages <button type="button" class="edt" data-k="staff">Edit staff</button></h2><span class="num" id="dWage" style="color:var(--spend)">£0.00</span></div>
     <div class="rows" id="staffRows"></div>
@@ -346,6 +369,7 @@ table.wk td:first-child,table.wk th:first-child{position:static}
     <div class="kpi"><span class="lbl">Margin</span><span class="num" id="kMargin">–</span><span class="chip" id="kMarginD"></span></div>
   </section>
 
+  <button type="button" class="note owenote" id="sumOwe" data-in="sum" hidden></button>
   <section class="stats" data-in="sum" aria-label="Key figures">
     <div class="stat"><span class="lbl">Avg sales / day</span><b id="sAvg">–</b><small id="sDays">0 days traded</small></div>
     <div class="stat"><span class="lbl">Best day</span><b id="sBest">–</b><small id="sBestD">–</small></div>
@@ -380,6 +404,7 @@ table.wk td:first-child,table.wk th:first-child{position:static}
         <button type="button" data-f="sale" aria-pressed="false">Sales</button>
         <button type="button" data-f="expense" aria-pressed="false">Expenses</button>
         <button type="button" data-f="receipts" aria-pressed="false">Receipts</button>
+        <button type="button" data-f="unpaid" aria-pressed="false">Not paid</button>
       </div>
     </div>
     <select id="tabF" class="tabf" aria-label="Show one tab or supplier"></select>
@@ -465,7 +490,8 @@ const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+Stri
 const parse=s=>{const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
 const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return iso(d)};
 const short=s=>parse(s).toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});
-const sum=(xs,f)=>xs.reduce((a,x)=>a+(f(x)?x.amount:0),0);
+const sum=(xs,f)=>xs.reduce((a,x)=>a+(x.paid!==false&&f(x)?x.amount:0),0);
+const owedList=()=>entries.filter(x=>x.paid===false);
 const KEY="shalimar-till-v1",BKEY="shalimar-till-lastbackup";
 function loadStore(){try{const a=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(a)?a.filter(x=>x&&typeof x.amount==="number"&&x.date&&x.type):[]}catch(e){return[]}}
 function saveStore(){try{localStorage.setItem(KEY,JSON.stringify(entries));return true}catch(e){toast("Couldn't save on this phone. Storage may be full.",1);return false}}
@@ -549,7 +575,11 @@ function buildRows(el,cats,type){
       cam.querySelector("input").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
         if(cam.dataset.u)URL.revokeObjectURL(cam.dataset.u);pending[c]=f;const u=URL.createObjectURL(f);cam.dataset.u=u;cam.style.backgroundImage="url("+u+")";cam.classList.add("has");
         toast("Photo ready. Enter the amount and tap +");r.querySelector("input[inputmode]").focus()});
-      r.insertBefore(cam,r.querySelector(".plus"))}
+      r.insertBefore(cam,r.querySelector(".plus"));
+      const pw=document.createElement("div");pw.className="pw";pw.innerHTML='<button type="button" class="pd" aria-pressed="true">✓ Paid</button><span class="ow"></span>';
+      const pd=pw.querySelector(".pd");pd.setAttribute("aria-label","Paid or not paid for "+c);
+      pd.onclick=()=>{const on=pd.getAttribute("aria-pressed")!=="true";pd.setAttribute("aria-pressed",on);pd.textContent=on?"✓ Paid":"✗ Not paid"};
+      r.appendChild(pw)}
     const inp=r.querySelector("input[inputmode]"),btn=r.querySelector("button.plus");inp.setAttribute("aria-label","Add to "+c);btn.setAttribute("aria-label","Add to "+c);
     const go=()=>addEntry(type,c,inp,btn);btn.onclick=go;inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();go()}});
     el.appendChild(r)});
@@ -559,9 +589,12 @@ async function addEntry(type,c,inp,btn,staff){
   if(!(amt>0)){toast("Enter an amount for "+(staff||c)+", like 45.50",1);inp.focus();return}
   if(!db||!canWrite){toast("Saving isn't available in this view",1);return}
   btn.disabled=true;
-  try{const e=await db.collection("entries").add({type,date:day,amount:Math.round(amt*100)/100,category:c,note:staff||"",...(staff?{staff}:{}),created:Date.now()});inp.value="";
+  const pdb_=type==="expense"&&!staff?btn.parentNode.querySelector(".pd"):null,unpaid=!!pdb_&&pdb_.getAttribute("aria-pressed")==="false";
+  try{const e=await db.collection("entries").add({type,date:day,amount:Math.round(amt*100)/100,category:c,note:staff||"",...(staff?{staff}:{}),...(unpaid?{paid:false}:{}),created:Date.now()});inp.value="";
+    if(pdb_){pdb_.setAttribute("aria-pressed","true");pdb_.textContent="✓ Paid"}
     if(type==="expense"&&pending[c]){const f=pending[c];delete pending[c];const cam=btn.parentNode.querySelector(".cam");if(cam){if(cam.dataset.u)URL.revokeObjectURL(cam.dataset.u);cam.dataset.u="";cam.style.backgroundImage="";cam.classList.remove("has")}
-      if(await attachPhoto(e,f))toast(gbp(amt)+" added to "+c+" with receipt")}
+      if(await attachPhoto(e,f))toast(gbp(amt)+" added to "+c+" with receipt"+(unpaid?" · not paid":""))}
+    else if(unpaid)toast(gbp(amt)+" added to "+c+" as not paid. It's in Not paid yet")
     else toast(staff?gbp(amt)+" wages added for "+staff:gbp(amt)+" added to "+c)}
   catch(err){toast("Couldn't save that. Try again.",1)}
   btn.disabled=false}
@@ -583,6 +616,7 @@ function renderDay(){
   if(ts&&ls){const d=(ts-ls)/ls*100;chip((d>=0?"▲ ":"▼ ")+Math.abs(d).toFixed(0)+"% sales vs last "+parse(day).toLocaleDateString("en-GB",{weekday:"short"}),d>=0?"up":"down")}
   if(ts)chip("Margin "+(tp/ts*100).toFixed(0)+"%");
   if(ts){const a=sum(xs,x=>x.type==="sale"&&APPS.includes(x.category));chip("Apps "+Math.round(a/ts*100)+"% · Counter "+Math.round((ts-a)/ts*100)+"%")}
+  {const ol=owedList();if(ol.length)chip(gbp0(ol.reduce((a,x)=>a+x.amount,0))+" not paid to suppliers","owe")}
   if(!xs.length)chip(loaded?"Nothing added for this day yet":"Loading your figures…");
   {const d0=parse(day);const ws=new Date(d0);ws.setDate(d0.getDate()-((d0.getDay()+6)%7));const W=iso(ws);
    const wk=entries.filter(x=>x.date>=W&&x.date<=day),wsale=sum(wk,x=>x.type==="sale"),wexp=sum(wk,x=>x.type==="expense");
@@ -592,7 +626,9 @@ function renderDay(){
   document.querySelectorAll(".srow").forEach(r=>{const c=r.dataset.cat,st=r.dataset.staff,isSale=SALE_CATS.includes(c);
     const v=st?sum(xs,x=>x.category===WAGES&&x.staff===st):sum(xs,x=>x.category===c&&x.type===(isSale?"sale":"expense")),tot=st?tw:isSale?ts:te-tw;
     const t=r.querySelector(".t");t.textContent=gbp(v);t.classList.toggle("zero",!v);
-    r.querySelector(".m b").style.width=(tot?v/tot*100:0)+"%"});
+    r.querySelector(".m b").style.width=(tot?v/tot*100:0)+"%";
+    const ow=r.querySelector(".ow");if(ow){const o=xs.filter(x=>x.paid===false&&x.type==="expense"&&x.category===c).reduce((a,x)=>a+x.amount,0);ow.textContent=o?gbp(o)+" not paid":""}});
+  renderPayables();
 }
 
 /* ---------- summary ---------- */
@@ -620,7 +656,7 @@ function renderSum(){
   const b=[];
   if(R.unit==="day"){for(let d=new Date(R.s);d<=R.e;d.setDate(d.getDate()+1))b.push({k:iso(d),l:String(d.getDate()),s:0,x:0})}
   else{for(let d=new Date(R.s.getFullYear(),R.s.getMonth(),1);d<=R.e;d.setMonth(d.getMonth()+1))b.push({k:iso(d).slice(0,7),l:d.toLocaleDateString("en-GB",{month:"short"}),s:0,x:0})}
-  const bm=new Map(b.map(x=>[x.k,x]));list.forEach(x=>{const k=bm.get(R.unit==="day"?x.date:x.date.slice(0,7));if(k){if(x.type==="sale")k.s+=x.amount;else k.x+=x.amount}});
+  const bm=new Map(b.map(x=>[x.k,x]));list.forEach(x=>{if(x.paid===false)return;const k=bm.get(R.unit==="day"?x.date:x.date.slice(0,7));if(k){if(x.type==="sale")k.s+=x.amount;else k.x+=x.amount}});
   $("chartTitle").textContent=R.unit==="day"?"Day by day":"Month by month";
   drawChart(b);drawMix(list.filter(x=>x.type==="sale"),ts);expBars(list.filter(x=>x.type==="expense"),te);table(list);
 }
@@ -674,12 +710,12 @@ function table(list){
 function renderBook(){
   const R=range(period),el=$("book");
   fillTabFilter();
-  const list=inRange(R.s,R.e).filter(x=>filter==="all"||(filter==="receipts"?x.photo:x.type===filter)).filter(x=>!tabFilter||(x.type+"|"+x.category)===tabFilter);
+  const list=(filter==="unpaid"?owedList():inRange(R.s,R.e)).filter(x=>filter==="all"||filter==="unpaid"||(filter==="receipts"?x.photo:x.type===filter)).filter(x=>!tabFilter||(x.type+"|"+x.category)===tabFilter);
   bookSummary(list);
-  if(!list.length){el.innerHTML=`<p class="empty">${entries.length?(tabFilter?"Nothing for "+tabFilter.split("|")[1]+" in this period. Try another month at the top.":filter==="receipts"?"No receipt photos in this period. Tap the camera next to an expense to add one.":"Nothing recorded here for this period."):"No entries yet. Add your first sale or expense on the Daily sheet."}</p>`;return}
+  if(!list.length){el.innerHTML=`<p class="empty">${entries.length?(filter==="unpaid"?"Nothing owed. Every bill is paid.":tabFilter?"Nothing for "+tabFilter.split("|")[1]+" in this period. Try another month at the top.":filter==="receipts"?"No receipt photos in this period. Tap the camera next to an expense to add one.":"Nothing recorded here for this period."):"No entries yet. Add your first sale or expense on the Daily sheet."}</p>`;return}
   const days=new Map();[...list].sort((a,b)=>b.date.localeCompare(a.date)||(b.created||0)-(a.created||0)).forEach(x=>{if(!days.has(x.date))days.set(x.date,[]);days.get(x.date).push(x)});
   el.innerHTML="";
-  days.forEach((xs,d)=>{const net=xs.reduce((a,x)=>a+(x.type==="sale"?x.amount:-x.amount),0);
+  days.forEach((xs,d)=>{const net=xs.reduce((a,x)=>a+(x.paid===false?0:x.type==="sale"?x.amount:-x.amount),0);
     const h=document.createElement("div");h.className="day";h.innerHTML=`<span>${short(d)}</span><span class="num ${net<0?"neg":"pos"}">${net>=0?"+":""}${gbp(net)}</span>`;el.appendChild(h);
     xs.forEach(x=>el.appendChild(bookRow(x)))});
 }
@@ -692,8 +728,9 @@ function bookRow(x){
     if(x.photo){b.setAttribute("aria-label","View receipt");b.onclick=()=>openViewer(x);thumbURL(x.id).then(u=>{if(u){const i=document.createElement("img");i.src=u;i.alt="";b.appendChild(i)}else{b.className="ico x add";b.innerHTML=CAM}})}
     else{b.title="Add receipt photo";b.innerHTML=CAM+'<input type="file" accept="image/*" aria-label="Add receipt photo">';b.querySelector("input").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";if(f)attachPhoto(x,f)})}
     old.replaceWith(b)}
+  if(x.paid===false){const t=document.createElement("span");t.className="tag owe";t.textContent="not paid";r.querySelector(".t").insertBefore(t,r.querySelector("small"))}
   if(x.example){const t=document.createElement("span");t.className="tag";t.textContent="example";r.querySelector(".t").insertBefore(t,r.querySelector("small"))}
-  r.querySelector("small").textContent=x.src==="shift"?x.staff+" · "+x.in+"–"+x.out+" · "+fmtH(x.hours)+" @ "+gbp(x.rate)+"/h":x.staff?"Paid to "+x.staff:x.note||(s?"Sale":x.photo?"Expense · receipt attached":"Expense · no receipt");
+  r.querySelector("small").textContent=x.paid===false?"Owed · not in profit until paid":x.billDate?"Bill dated "+short(x.billDate)+" · paid "+short(x.date):x.src==="shift"?x.staff+" · "+x.in+"–"+x.out+" · "+fmtH(x.hours)+" @ "+gbp(x.rate)+"/h":x.staff?"Paid to "+x.staff:x.note||(s?"Sale":x.photo?"Expense · receipt attached":"Expense · no receipt");
   if(canWrite&&db){const acts=r.querySelector(".acts");
     const ed=document.createElement("button");ed.type="button";ed.className="mini";ed.textContent="Edit";
     ed.onclick=()=>{const amt=r.querySelector(".amt");const inp=document.createElement("input");inp.className="ed";inp.inputMode="decimal";inp.value=x.amount.toFixed(2);inp.setAttribute("aria-label","New amount");amt.replaceWith(inp);inp.focus();inp.select();
@@ -705,6 +742,10 @@ function bookRow(x){
     const del=document.createElement("button");del.type="button";del.className="mini";del.textContent="Delete";
     del.onclick=async()=>{if(!del.classList.contains("arm")){del.classList.add("arm");del.textContent="Sure?";setTimeout(()=>{del.classList.remove("arm");del.textContent="Delete"},3000);return}
       del.disabled=true;try{await db.collection("entries").doc(x.id).delete();if(x.photo){try{await photoDel(x.id);dropThumb(x.id)}catch(e){}}toast("Entry deleted")}catch(e){del.disabled=false;toast("Couldn't delete. Try again.",1)}};
+    if(x.paid===false){const mp=document.createElement("button");mp.type="button";mp.className="mini pay";mp.textContent="Mark paid";
+      mp.onclick=()=>{if(!mp.classList.contains("arm")){mp.classList.add("arm");mp.textContent="Confirm";setTimeout(()=>{if(mp.isConnected){mp.classList.remove("arm");mp.textContent="Mark paid"}},3000);return}markPaid(x)};acts.append(mp)}
+    else if(x.billDate){const up=document.createElement("button");up.type="button";up.className="mini";up.textContent="Not paid";up.title="Move back to Not paid yet";
+      up.onclick=()=>{if(!up.classList.contains("arm")){up.classList.add("arm");up.textContent="Sure?";setTimeout(()=>{if(up.isConnected){up.classList.remove("arm");up.textContent="Not paid"}},3000);return}markUnpaid(x)};acts.append(up)}
     acts.append(ed,del)}
   return r;
 }
@@ -717,7 +758,7 @@ function dayText(){
   t+="\n*Expenses: "+gbp(te)+"*\n";
   EXP_CATS.forEach(c=>{const v=sum(xs,x=>x.type==="expense"&&x.category===c);if(v){t+="• "+c+": "+gbp(v)+"\n";if(c===WAGES)STAFF.forEach(p=>{const e=xs.find(x=>x.category===WAGES&&x.staff===p.n&&x.src==="shift"),w=sum(xs,x=>x.category===WAGES&&x.staff===p.n);if(w)t+="   – "+p.n+": "+(e?e.in+"–"+e.out+" ("+fmtH(e.hours)+") · ":"")+gbp(w)+"\n"})}});
   t+="\n*Profit: "+gbp(ts-te)+"*"+(ts?" ("+((ts-te)/ts*100).toFixed(0)+"% margin)":"");
-  return t}
+  return t+owedText()}
 function sumText(){
   const R=range(period),list=inRange(R.s,R.e),ts=sum(list,x=>x.type==="sale"),te=sum(list,x=>x.type==="expense");
   let t="*Shalimar Grill summary*\n"+fmtD(R.s)+" – "+fmtD(R.e)+"\n\n*Sales: "+gbp(ts)+"*\n";
@@ -726,7 +767,7 @@ function sumText(){
   EXP_CATS.forEach(c=>{const v=sum(list,x=>x.type==="expense"&&x.category===c);if(v){t+="• "+c+": "+gbp(v)+"\n";if(c===WAGES)STAFF.forEach(p=>{const w=sum(list,x=>x.category===WAGES&&x.staff===p.n),h=list.filter(x=>x.category===WAGES&&x.staff===p.n).reduce((a,x)=>a+(x.hours||0),0);if(w)t+="   – "+p.n+": "+(h?fmtH(h)+" · ":"")+gbp(w)+"\n"})}});
   t+="\n*Profit: "+gbp(ts-te)+"*"+(ts?" ("+((ts-te)/ts*100).toFixed(1)+"% margin)":"");
   const nd=new Set(list.filter(x=>x.type==="sale").map(x=>x.date)).size;if(nd)t+="\nAverage sales per day: "+gbp(ts/nd);
-  return t}
+  return t+owedText()}
 function updateShare(){$("waDay").href="https://wa.me/?text="+encodeURIComponent(dayText());$("waSum").href="https://wa.me/?text="+encodeURIComponent(sumText())}
 document.querySelectorAll(".cp").forEach(b=>b.onclick=()=>{const t=b.dataset.src==="day"?dayText():sumText();
   try{navigator.clipboard.writeText(t).then(()=>toast("Copied. Paste it into WhatsApp"),()=>toast("Couldn't copy on this device",1))}catch(e){toast("Couldn't copy on this device",1)}});
@@ -864,6 +905,7 @@ $("imGo").onclick=()=>{const {days}=daily(),[k,tab]=$("imTab").value.split("|");
   if(!saveStore()){entries=backup;return}
   setMap(imHead.join("|"),{d:+$("imDate").value,a:+$("imAmt").value,t:$("imTab").value});
   render();$("impSheet").hidden=true;$("imMap").hidden=true;toast(n+" days imported into "+tab+(replaced?" ("+replaced+" replaced)":""))};
+$("sumOwe").onclick=()=>{setView("day");setTimeout(()=>$("payCard").scrollIntoView({behavior:"smooth",block:"start"}),50)};
 $("impBtn").onclick=()=>{$("impSheet").hidden=false;$("imMap").hidden=true};
 $("imClose").onclick=()=>$("impSheet").hidden=true;
 $("impSheet").addEventListener("click",e=>{if(e.target.id==="impSheet")$("impSheet").hidden=true});
@@ -876,15 +918,43 @@ function fillTabFilter(){const sel=$("tabF"),cur=tabFilter;sel.innerHTML='<optio
   sel.value=[...sel.options].some(o=>o.value===cur)?cur:"";tabFilter=sel.value}
 $("tabF").addEventListener("change",e=>{tabFilter=e.target.value;renderBook()});
 function bookSummary(list){const el=$("bookSum");if(!tabFilter){el.hidden=true;return}
-  const [k,n]=tabFilter.split("|"),tot=list.reduce((a,x)=>a+x.amount,0),bills=list.filter(x=>x.photo);
+  const [k,n]=tabFilter.split("|"),tot=list.reduce((a,x)=>a+(x.paid===false?0:x.amount),0),bills=list.filter(x=>x.photo),owed=owedList().filter(x=>(x.type+"|"+x.category)===tabFilter).reduce((a,x)=>a+x.amount,0);
   const per=n===WAGES?STAFF.map(p=>{const xs=list.filter(x=>x.staff===p.n),h=xs.reduce((a,x)=>a+(x.hours||0),0);return[p.n+(h?" · "+fmtH(h):""),xs.reduce((a,x)=>a+x.amount,0)]}).filter(x=>x[1]):[];
-  el.hidden=false;el.innerHTML=(per.length?`<div class="bs" style="grid-column:1/-1">${per.map(([p,v])=>`<div class="pr" style="display:flex;justify-content:space-between;gap:8px"><span>${p.replace(/</g,"&lt;")}</span><b>${gbp(v)}</b></div>`).join("")}</div>`:"")+`<div class="bs"><span class="lbl">${k==="sale"?"Total sales":"Total spent"}</span><b>${gbp(tot)}</b></div><div class="bs"><span class="lbl">Entries</span><b>${list.length}</b></div><div class="bs"><span class="lbl">Bill photos</span><b>${bills.length}</b></div>`+
+  el.hidden=false;el.innerHTML=(per.length?`<div class="bs" style="grid-column:1/-1">${per.map(([p,v])=>`<div class="pr" style="display:flex;justify-content:space-between;gap:8px"><span>${p.replace(/</g,"&lt;")}</span><b>${gbp(v)}</b></div>`).join("")}</div>`:"")+`<div class="bs"><span class="lbl">${k==="sale"?"Total sales":"Total paid"}</span><b>${gbp(tot)}</b></div><div class="bs"><span class="lbl">Entries</span><b>${list.length}</b></div><div class="bs"><span class="lbl">Bill photos</span><b>${bills.length}</b></div>`+
+    (owed?`<div class="bs" style="grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline"><span class="lbl" style="color:var(--owe)">Not paid yet (owed)</span><b style="color:var(--owe)">${gbp(owed)}</b></div>`:"")+
     (bills.length?`<button type="button" class="bbtn" id="shareBills">Share all ${bills.length} bill${bills.length>1?"s":""}</button>`:"");
   if(bills.length)$("shareBills").onclick=async()=>{const files=[];const R=range(period);
     for(const x of bills.sort((a,b)=>a.date.localeCompare(b.date))){try{const b=await photoGet(x.id);if(b)files.push(new File([b],x.date+"-"+n.replace(/[^a-z0-9]+/gi,"-").toLowerCase()+"-"+x.amount.toFixed(2)+".jpg",{type:"image/jpeg"}))}catch(e){}}
     if(!files.length){toast("No bill photos found on this phone",1);return}
     try{if(navigator.canShare&&navigator.canShare({files})){await navigator.share({files,title:n+" bills "+fmtD(R.s)+" – "+fmtD(R.e),text:n+" bills "+fmtD(R.s)+" – "+fmtD(R.e)+": "+files.length+" bills, total "+gbp(tot)})}else toast("Sharing isn't available here",1)}catch(e){}};
 }
+
+/* ---------- not paid yet (payables) ---------- */
+async function markPaid(x){const today=iso(new Date());
+  try{await db.collection("entries").doc(x.id).update({paid:true,billDate:x.billDate||x.date,paidOn:today,date:today});toast(gbp(x.amount)+" to "+x.category+" marked as paid. Counted in today's figures")}
+  catch(e){toast("Couldn't update that bill. Try again.",1)}}
+async function markUnpaid(x){
+  try{await db.collection("entries").doc(x.id).update({paid:false,date:x.billDate||x.date,billDate:undefined,paidOn:undefined});toast(x.category+" bill moved back to Not paid yet")}
+  catch(e){toast("Couldn't update that bill. Try again.",1)}}
+function renderPayables(){const ol=owedList(),el=$("payList"),tot=ol.reduce((a,x)=>a+x.amount,0);
+  const so=$("sumOwe");so.hidden=!ol.length;if(ol.length){const n=new Set(ol.map(x=>x.category)).size;so.innerHTML=`Not paid yet: <b>${gbp(tot)}</b> owed to ${n} supplier${n>1?"s":""}. Not included in these figures until you mark them as paid. <u>View</u>`}
+  $("payTot").textContent=gbp(tot);$("payHelp").hidden=!ol.length;
+  if(!ol.length){el.innerHTML='<p class="thelp">Nothing owed to suppliers. To record a bill you haven\'t paid yet, tap <b>✓ Paid</b> on the expense to switch it to <b>Not paid</b> before you add it.</p>';return}
+  el.innerHTML="";const groups=[...new Set(ol.map(x=>x.category))];
+  groups.forEach(c=>{const xs=ol.filter(x=>x.category===c).sort((a,b)=>a.date.localeCompare(b.date)),t=xs.reduce((a,x)=>a+x.amount,0);
+    const g=document.createElement("div");g.className="pgrp";g.innerHTML=`<div class="pgh"><span></span><b>${gbp(t)}</b></div>`;
+    g.querySelector(".pgh span").textContent=c+" · "+xs.length+" bill"+(xs.length>1?"s":"");
+    xs.forEach(x=>{const r=document.createElement("div");r.className="pbill";
+      r.innerHTML=`<span>${short(x.date)}${x.photo?" · 📎":""}</span><b>${gbp(x.amount)}</b><button type="button" class="mini pay">Mark paid</button>`;
+      const b=r.querySelector(".pay");b.setAttribute("aria-label","Mark "+gbp(x.amount)+" to "+c+" as paid");
+      b.onclick=()=>{if(!b.classList.contains("arm")){b.classList.add("arm");b.textContent="Confirm";setTimeout(()=>{if(b.isConnected){b.classList.remove("arm");b.textContent="Mark paid"}},3000);return}markPaid(x)};
+      if(x.photo){r.querySelector("span").style.cursor="pointer";r.querySelector("span").onclick=()=>openViewer(x)}
+      g.appendChild(r)});
+    el.appendChild(g)})}
+function owedText(){const ol=owedList();if(!ol.length)return"";
+  let t="\n\n*Not paid yet (owed): "+gbp(ol.reduce((a,x)=>a+x.amount,0))+"*\n";
+  [...new Set(ol.map(x=>x.category))].forEach(c=>{t+="• "+c+": "+gbp(ol.filter(x=>x.category===c).reduce((a,x)=>a+x.amount,0))+"\n"});
+  return t.trimEnd()}
 /* ---------- shell ---------- */
 function render(){remind();renderDay();renderSum();renderBook();updateShare()}
 function setView(v){$("app").dataset.view=v;document.querySelectorAll(".views button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===v));try{localStorage.setItem("till-view",v)}catch(e){}}
@@ -972,7 +1042,7 @@ $("clearEx").onclick=doBackup;$("bkSave").onclick=doBackup;$("backupTop").onclic
 $("csvBtn").onclick=async()=>{const R=range(period),list=inRange(R.s,R.e).sort((a,b)=>a.date.localeCompare(b.date));
   if(!list.length){toast("Nothing to export for this period",1);return}
   const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
-  const csv="Date,Type,Tab,Amount (GBP),Note,Staff,In,Out,Hours,Rate\n"+list.map(x=>[x.date,x.type==="sale"?"Sale":"Expense",q(x.category),x.amount.toFixed(2),q(x.note||""),q(x.staff||""),x.in||"",x.out||"",x.hours!=null?x.hours:"",x.rate!=null?x.rate:""].join(",")).join("\n");
+  const csv="Date,Type,Tab,Amount (GBP),Note,Staff,In,Out,Hours,Rate,Status,Bill date\n"+list.map(x=>[x.date,x.type==="sale"?"Sale":"Expense",q(x.category),x.amount.toFixed(2),q(x.note||""),q(x.staff||""),x.in||"",x.out||"",x.hours!=null?x.hours:"",x.rate!=null?x.rate:"",x.type==="sale"?"":x.paid===false?"Not paid":x.billDate?"Paid later":"Paid",x.billDate||""].join(",")).join("\n");
   if(await shareFile("shalimar-grill-"+iso(R.s)+"-to-"+iso(R.e)+".csv",csv,"text/csv"))toast("CSV ready")};
 function parseCSV(t){const rows=[];let row=[],f="",q=false;
   for(let i=0;i<t.length;i++){const c=t[i];
@@ -985,11 +1055,11 @@ async function importData(text,name){
     const j=JSON.parse(text);photos=(j&&j.photos)||{};if(j&&Array.isArray(j.staff)){j.staff.forEach(p=>{if(p&&p.n&&!STAFF.some(x=>x.n===p.n))STAFF.push({n:p.n,hid:!!p.hid,...(p.rate?{rate:p.rate}:{})})});saveStaff()}if(j&&Array.isArray(j.tabs))j.tabs.forEach(t=>{if(t&&t.n&&(t.k==="sale"||t.k==="expense")&&!TABS.some(x=>x.k===t.k&&x.n===t.n))TABS.push({n:t.n,k:t.k,f:!!t.f,hid:!!t.hid,...(t.w?{w:true}:{})})});saveTabs();incoming=(Array.isArray(j)?j:j.entries||[]).filter(x=>x&&x.date&&x.type&&typeof x.amount==="number")}
   else{const r=parseCSV(text.trim());r.shift();
     incoming=r.filter(x=>x.length>=4&&/^\d{4}-\d{2}-\d{2}$/.test(x[0])).map((x,i)=>({date:x[0],type:/^sale/i.test(x[1])?"sale":"expense",category:x[2],amount:Math.round(parseFloat(x[3])*100)/100,note:x[4]||"",created:Date.now()+i})).filter(x=>x.amount>0)}
-  const sig=x=>[x.date,x.type,x.category,x.amount.toFixed(2),x.created||""].join("|");
+  const sig=x=>[x.billDate||x.date,x.type,x.category,x.amount.toFixed(2),x.created||""].join("|");
   const have=new Map(entries.map(e=>[sig(e),e]));let added=0,pics=0;
   for(const x of incoming){if(x.example)continue;
     let e=have.get(sig({...x,created:x.created||""}));
-    if(!e){e={id:x.id&&!entries.some(y=>y.id===x.id)?x.id:uid(),type:x.type,date:x.date,amount:x.amount,category:x.category,note:x.note||"",created:x.created||Date.now(),...(x.src?{src:x.src}:{}),...(x.staff?{staff:x.staff}:{}),...(x.in?{in:x.in,out:x.out,hours:x.hours,rate:x.rate}:{})};entries.push(e);have.set(sig(e),e);added++}
+    if(!e){e={id:x.id&&!entries.some(y=>y.id===x.id)?x.id:uid(),type:x.type,date:x.date,amount:x.amount,category:x.category,note:x.note||"",created:x.created||Date.now(),...(x.src?{src:x.src}:{}),...(x.staff?{staff:x.staff}:{}),...(x.in?{in:x.in,out:x.out,hours:x.hours,rate:x.rate}:{}),...(x.paid===false?{paid:false}:{}),...(x.billDate?{paid:true,billDate:x.billDate,paidOn:x.paidOn||x.date}:{})};entries.push(e);have.set(sig(e),e);added++}
     const p=x.id&&photos[x.id];
     if(p&&!e.photo){try{const blob=await (await fetch(p)).blob();await photoPut(e.id,blob);e.photo=true;pics++}catch(err){}}}
   return{added,pics}}
