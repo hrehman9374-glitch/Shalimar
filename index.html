@@ -156,7 +156,19 @@ label.ico{cursor:pointer}
 .shsave{height:40px;border:0;border-radius:10px;padding:0 12px;background:var(--spend);color:#fff;font:700 .82rem var(--body);cursor:pointer}
 .shsave:disabled{opacity:.5}
 .shclr{padding:2px 8px;font-size:.7rem}
-.wksum{border-top:2px solid var(--line);padding-top:10px}
+.wksum{border-top:2px solid var(--line);padding-top:10px;display:grid;gap:8px}
+.wknav{display:flex;align-items:center;gap:6px}
+.wknav .wl{flex:1;min-width:0;text-align:center;font:700 .88rem var(--display)}
+.wknav .wl small{display:block;font:500 .74rem var(--body);color:var(--muted)}
+.wknav .mini{min-width:38px;min-height:36px;font-size:1rem}
+table.wk td.pc{text-align:right;white-space:nowrap}
+table.wk .pd{font-size:.72rem;padding:6px 10px;min-height:32px}
+.pd.part{background:var(--owe);border-color:var(--owe);color:#fff}
+.wkpaid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.wkpaid div{background:var(--soft);border-radius:12px;padding:9px 10px;display:grid;gap:2px}
+.wkpaid b{font:600 .98rem var(--mono)}
+.wkold{font:600 .82rem var(--body);text-align:left;width:100%;cursor:pointer;color:var(--ink)}
+.wkold b{color:var(--owe);font-family:var(--mono)}
 table.wk{min-width:0!important;width:100%}
 table.wk td:first-child,table.wk th:first-child{position:static}
 .edt{font:600 .7rem var(--body);background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:3px 8px;margin-left:6px;cursor:pointer;vertical-align:2px}
@@ -483,6 +495,11 @@ function syncTabs(){
 const SKEY="shalimar-staff-v1",WAGES="Wages";
 let STAFF=(()=>{try{const t=JSON.parse(localStorage.getItem(SKEY)||"null");if(Array.isArray(t))return t.filter(x=>x&&x.n)}catch(e){}return[{n:"Staff 1"},{n:"Staff 2"},{n:"Staff 3"}]})();
 function saveStaff(){try{localStorage.setItem(SKEY,JSON.stringify(STAFF))}catch(e){toast("Couldn't save staff on this phone",1)}}
+/* weekly wage paid / not paid: key "weekStart|name" -> {amt, on} */
+const WPKEY="shalimar-wagepaid-v1";
+let WPAID=(()=>{try{const t=JSON.parse(localStorage.getItem(WPKEY)||"null");if(t&&typeof t==="object"&&!Array.isArray(t))return t}catch(e){}return{}})();
+function saveWPaid(){try{localStorage.setItem(WPKEY,JSON.stringify(WPAID));return true}catch(e){toast("Couldn't save on this phone",1);return false}}
+let wkOff=0,wkFor=null;
 const visible=k=>TABS.filter(t=>t.k===k&&!t.hid&&!t.w).map(t=>t.n);
 const staffOn=()=>STAFF.filter(s=>!s.hid).map(s=>s.n);
 const $=id=>document.getElementById(id);
@@ -820,6 +837,7 @@ function renameTab(t,inp){const nn=inp.value.trim().replace(/\s+/g," ");
   if(tk==="staff"){if(STAFF.some(x=>x!==t&&x.n.toLowerCase()===nn.toLowerCase())){toast("There's already someone called "+nn,1);inp.value=t.n;return}
     const old=t.n;entries.forEach(x=>{if(x.category===WAGES&&x.staff===old){x.staff=nn;x.note=x.src==="shift"?nn+" "+x.in+"–"+x.out:nn}});t.n=nn;
     if(!saveStore()){entries.forEach(x=>{if(x.category===WAGES&&x.staff===nn){x.staff=old;x.note=old}});t.n=old;inp.value=old;return}
+    Object.keys(WPAID).forEach(k=>{const[w,n]=[k.slice(0,10),k.slice(11)];if(n===old){WPAID[w+"|"+nn]=WPAID[k];delete WPAID[k]}});saveWPaid();
     saveStaff();toast("Renamed to "+nn);return}
   if(TABS.some(x=>x!==t&&x.k===t.k&&x.n.toLowerCase()===nn.toLowerCase())){toast("There's already a tab called "+nn,1);inp.value=t.n;return}
   const old=t.n;entries.forEach(x=>{if(x.type===t.k&&x.category===old)x.category=nn});t.n=nn;
@@ -1015,19 +1033,37 @@ function renderStaff(){
     r.querySelector(".shclr").hidden=!e;r.querySelector(".shsave").textContent=e?"Update":"Save";
     const other=sum(entries.filter(x=>x.date===day),x=>x.category===WAGES&&x.staff===n&&x.src!=="shift");
     shiftPreview(r);if(other){const sc=r.querySelector(".sc");sc.textContent=(sc.textContent?sc.textContent+" + ":"")+gbp(other)+" extra"}});
-  const[ws,we]=weekOf(day),wk=entries.filter(x=>x.category===WAGES&&x.date>=ws&&x.date<=we);
-  const el=$("wkSum");
-  if(!wk.length){el.innerHTML=`<p class="thelp">This week (${short(ws)} – ${short(we)}): no hours yet.</p>`;$("waWk").hidden=true;return}
-  const people=[...new Set(wk.map(x=>x.staff||"Other"))];let H=0,P=0;
-  const rows=people.map(p=>{const xs=wk.filter(x=>(x.staff||"Other")===p),h=xs.reduce((a,x)=>a+(x.hours||0),0),pay=xs.reduce((a,x)=>a+x.amount,0),days=new Set(xs.filter(x=>x.hours).map(x=>x.date)).size;H+=h;P+=pay;
-    return `<tr><td>${p.replace(/</g,"&lt;")}</td><td>${days||"–"}</td><td>${h?fmtH(h):"–"}</td><td>${gbp(pay)}</td></tr>`}).join("");
-  el.innerHTML=`<div class="lbl" style="margin-bottom:6px">This week · ${short(ws)} – ${short(we)}</div><div class="tbl" style="margin:0;padding:0"><table class="wk"><thead><tr><th>Staff</th><th>Days</th><th>Hours</th><th>Pay</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td>Total</td><td></td><td>${fmtH(H)}</td><td>${gbp(P)}</td></tr></tfoot></table></div>`;
-  {const wsales=sum(entries.filter(x=>x.date>=ws&&x.date<=we),x=>x.type==="sale");const pct=document.createElement("p");pct.className="thelp";pct.style.marginTop="6px";pct.textContent=wsales?"Wages are "+Math.round(P/wsales*100)+"% of this week's sales ("+gbp0(wsales)+").":"No sales entered this week yet, so no wages % to show.";el.appendChild(pct)}
+  if(wkFor!==day){wkFor=day;wkOff=0}
+  const[ws,we]=weekOf(addDays(day,wkOff*7)),wk=entries.filter(x=>x.category===WAGES&&x.date>=ws&&x.date<=we);
+  const el=$("wkSum"),esc=v=>String(v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const[cws]=weekOf(iso(new Date())),wname=ws===cws?"This week":ws===addDays(cws,-7)?"Last week":ws===addDays(cws,7)?"Next week":"Week of "+short(ws);
+  const nav=`<div class="wknav"><button type="button" class="mini" id="wkPrev" aria-label="Previous week">‹</button><div class="wl">${wname}<small>${short(ws)} – ${short(we)}</small></div><button type="button" class="mini" id="wkNext" aria-label="Next week">›</button>${wkOff?'<button type="button" class="mini" id="wkNow">Back</button>':""}</div>`;
+  // unpaid wages in earlier weeks
+  const old={};entries.forEach(x=>{if(x.category!==WAGES||x.paid===false)return;const[w]=weekOf(x.date);if(w>=ws)return;const k=w+"|"+(x.staff||"Other");old[k]=(old[k]||0)+x.amount});
+  let oldAmt=0,oldWeeks=new Set(),oldLatest=null;Object.entries(old).forEach(([k,v])=>{const due=Math.round((v-((WPAID[k]&&WPAID[k].amt)||0))*100)/100;if(due>0.004){oldAmt+=due;const w=k.slice(0,10);oldWeeks.add(w);if(!oldLatest||w>oldLatest)oldLatest=w}});
+  const oldNote=oldAmt>0?`<button type="button" class="note wkold" id="wkOld">Wages not paid from ${oldWeeks.size} earlier week${oldWeeks.size>1?"s":""}: <b>${gbp(oldAmt)}</b> · tap to see</button>`:"";
+  const wire=()=>{$("wkPrev").onclick=()=>{wkOff--;renderStaff()};$("wkNext").onclick=()=>{wkOff++;renderStaff()};if($("wkNow"))$("wkNow").onclick=()=>{wkOff=0;renderStaff()};
+    if($("wkOld"))$("wkOld").onclick=()=>{const[dw]=weekOf(day);wkOff=Math.round((parse(oldLatest)-parse(dw))/(7*864e5));renderStaff()}};
+  if(!wk.length){el.innerHTML=nav+oldNote+`<p class="thelp">No hours or wages entered for this week.</p>`;wire();$("waWk").hidden=true;return}
+  const people=[...new Set(wk.map(x=>x.staff||"Other"))];let H=0,P=0,PD=0;
+  const info=people.map(p=>{const xs=wk.filter(x=>(x.staff||"Other")===p),h=xs.reduce((a,x)=>a+(x.hours||0),0),pay=Math.round(xs.reduce((a,x)=>a+x.amount,0)*100)/100,days=new Set(xs.filter(x=>x.hours).map(x=>x.date)).size,
+    rec=WPAID[ws+"|"+p],paidAmt=rec?Math.min(rec.amt,pay):0,due=Math.round((pay-(rec?rec.amt:0))*100)/100;H+=h;P+=pay;PD+=paidAmt;return{p,h,pay,days,rec,due}});
+  const rows=info.map((r,i)=>{const st=!r.rec?["false","✗ Not paid",""]:r.due>0.004?["false","Owes "+gbp(r.due)," part"]:["true","✓ Paid",""];
+    return `<tr><td>${esc(r.p)}</td><td>${r.days||"–"}</td><td>${r.h?fmtH(r.h):"–"}</td><td>${gbp(r.pay)}</td><td class="pc"><button type="button" class="pd${st[2]}" aria-pressed="${st[0]}" data-i="${i}" title="${r.rec?"Paid "+short(r.rec.on)+" · "+gbp(r.rec.amt):"Tap when you pay "+esc(r.p)}">${st[1]}</button></td></tr>`}).join("");
+  const DUE=Math.round((P-PD)*100)/100;
+  el.innerHTML=nav+oldNote+`<div class="tbl" style="margin:0;padding:0"><table class="wk"><thead><tr><th>Staff</th><th>Days</th><th>Hours</th><th>Pay</th><th>Paid?</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td>Total</td><td></td><td>${fmtH(H)}</td><td>${gbp(P)}</td><td></td></tr></tfoot></table></div>
+    <div class="wkpaid"><div><span class="lbl">Paid</span><b style="color:var(--good)">${gbp(PD)}</b></div><div><span class="lbl">Still to pay</span><b style="color:${DUE>0.004?"var(--owe)":"var(--muted)"}">${gbp(Math.max(0,DUE))}</b></div></div>`;
+  el.querySelectorAll("table.wk .pd").forEach(b=>{const r=info[+b.dataset.i],k=ws+"|"+r.p;
+    b.onclick=()=>{if(!r.rec||r.due>0.004){WPAID[k]={amt:r.pay,on:iso(new Date())};if(saveWPaid()){toast(r.p+" marked as paid "+gbp(r.pay)+" for "+wname.toLowerCase());renderStaff()}return}
+      if(!b.classList.contains("arm")){b.classList.add("arm");b.textContent="Tap again to undo";setTimeout(()=>{if(b.isConnected){b.classList.remove("arm");b.textContent="✓ Paid"}},3000);return}
+      delete WPAID[k];if(saveWPaid()){toast(r.p+" changed back to not paid");renderStaff()}}});
+  wire();
+  {const wsales=sum(entries.filter(x=>x.date>=ws&&x.date<=we),x=>x.type==="sale");const pct=document.createElement("p");pct.className="thelp";pct.textContent=wsales?"Wages are "+Math.round(P/wsales*100)+"% of this week's sales ("+gbp0(wsales)+").":"No sales entered this week yet, so no wages % to show.";el.appendChild(pct)}
   let t="*Shalimar Grill wages*\n"+short(ws)+" – "+short(we)+"\n\n";
-  people.forEach(p=>{const xs=wk.filter(x=>(x.staff||"Other")===p),h=xs.reduce((a,x)=>a+(x.hours||0),0),pay=xs.reduce((a,x)=>a+x.amount,0);t+="• "+p+": "+(h?fmtH(h)+" · ":"")+gbp(pay)+"\n"});
-  t+="\n*Total: "+fmtH(H)+" · "+gbp(P)+"*";
+  info.forEach(r=>{t+="• "+r.p+": "+(r.h?fmtH(r.h)+" · ":"")+gbp(r.pay)+(!r.rec?" · not paid":r.due>0.004?" · owes "+gbp(r.due):" · paid ✓")+"\n"});
+  t+="\n*Total: "+fmtH(H)+" · "+gbp(P)+"*\nPaid: "+gbp(PD)+" · Still to pay: "+gbp(Math.max(0,DUE));
   {const wsales=sum(entries.filter(x=>x.date>=ws&&x.date<=we),x=>x.type==="sale");if(wsales)t+="\nWages are "+Math.round(P/wsales*100)+"% of sales ("+gbp0(wsales)+")"}
-  const a=$("waWk");a.hidden=false;a.href="https://wa.me/?text="+encodeURIComponent(t)}
+  const a=$("waWk");a.hidden=false;a.textContent="Send "+wname.toLowerCase().replace(/^week of/,"week of")+"'s wages on WhatsApp";a.href="https://wa.me/?text="+encodeURIComponent(t)}
 rebuildRows();
 function lastBackup(){try{return +localStorage.getItem(BKEY)||0}catch(e){return 0}}
 function remind(){const lb=lastBackup(),days=lb?Math.floor((Date.now()-lb)/864e5):null;
@@ -1044,7 +1080,7 @@ async function doBackup(){
   if(!entries.length){toast("Nothing to back up yet",1);return}
   const photos={};
   for(const x of entries.filter(e=>e.photo)){try{const b=await photoGet(x.id);if(b)photos[x.id]=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(b)})}catch(e){}}
-  const data=JSON.stringify({app:"shalimar-till",version:2,saved:new Date().toISOString(),entries,photos,tabs:TABS,staff:STAFF});
+  const data=JSON.stringify({app:"shalimar-till",version:2,saved:new Date().toISOString(),entries,photos,tabs:TABS,staff:STAFF,wagePaid:WPAID});
   const ok=await shareFile("shalimar-grill-backup-"+iso(new Date())+".json",data,"application/json");
   if(ok){try{localStorage.setItem(BKEY,String(Date.now()))}catch(e){}remind();toast("Backup ready. Keep the file somewhere safe")}}
 $("clearEx").onclick=doBackup;$("bkSave").onclick=doBackup;$("backupTop").onclick=()=>{setView("book");setTimeout(()=>$("backupCard").scrollIntoView({behavior:"smooth"}),50)};
@@ -1061,7 +1097,7 @@ function parseCSV(t){const rows=[];let row=[],f="",q=false;
 async function importData(text,name){
   let incoming=[],photos={};
   if(/\.json$/i.test(name)||text.trim().startsWith("{")||text.trim().startsWith("[")){
-    const j=JSON.parse(text);photos=(j&&j.photos)||{};if(j&&Array.isArray(j.staff)){j.staff.forEach(p=>{if(p&&p.n&&!STAFF.some(x=>x.n===p.n))STAFF.push({n:p.n,hid:!!p.hid,...(p.rate?{rate:p.rate}:{})})});saveStaff()}if(j&&Array.isArray(j.tabs))j.tabs.forEach(t=>{if(t&&t.n&&(t.k==="sale"||t.k==="expense")&&!TABS.some(x=>x.k===t.k&&x.n===t.n))TABS.push({n:t.n,k:t.k,f:!!t.f,hid:!!t.hid,...(t.w?{w:true}:{})})});saveTabs();incoming=(Array.isArray(j)?j:j.entries||[]).filter(x=>x&&x.date&&x.type&&typeof x.amount==="number")}
+    const j=JSON.parse(text);photos=(j&&j.photos)||{};if(j&&j.wagePaid&&typeof j.wagePaid==="object"){Object.entries(j.wagePaid).forEach(([k,v])=>{if(v&&typeof v.amt==="number"&&!WPAID[k])WPAID[k]=v});saveWPaid()}if(j&&Array.isArray(j.staff)){j.staff.forEach(p=>{if(p&&p.n&&!STAFF.some(x=>x.n===p.n))STAFF.push({n:p.n,hid:!!p.hid,...(p.rate?{rate:p.rate}:{})})});saveStaff()}if(j&&Array.isArray(j.tabs))j.tabs.forEach(t=>{if(t&&t.n&&(t.k==="sale"||t.k==="expense")&&!TABS.some(x=>x.k===t.k&&x.n===t.n))TABS.push({n:t.n,k:t.k,f:!!t.f,hid:!!t.hid,...(t.w?{w:true}:{})})});saveTabs();incoming=(Array.isArray(j)?j:j.entries||[]).filter(x=>x&&x.date&&x.type&&typeof x.amount==="number")}
   else{const r=parseCSV(text.trim());r.shift();
     incoming=r.filter(x=>x.length>=4&&/^\d{4}-\d{2}-\d{2}$/.test(x[0])).map((x,i)=>({date:x[0],type:/^sale/i.test(x[1])?"sale":"expense",category:x[2],amount:Math.round(parseFloat(x[3])*100)/100,note:x[4]||"",created:Date.now()+i})).filter(x=>x.amount>0)}
   const sig=x=>[x.billDate||x.date,x.type,x.category,x.amount.toFixed(2),x.created||""].join("|");
