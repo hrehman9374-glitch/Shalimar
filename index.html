@@ -169,6 +169,17 @@ table.wk .pd{font-size:.72rem;padding:6px 10px;min-height:32px}
 .wkpaid b{font:600 .98rem var(--mono)}
 .wkold{font:600 .82rem var(--body);text-align:left;width:100%;cursor:pointer;color:var(--ink)}
 .wkold b{color:var(--owe);font-family:var(--mono)}
+.wkname{font:700 .88rem var(--body);background:none;border:0;padding:0;color:var(--ink);cursor:pointer;text-align:left;display:inline-flex;align-items:center;gap:6px}
+.wkname span{font:600 .66rem var(--body);border:1px solid var(--line);border-radius:999px;padding:2px 7px;color:var(--muted)}
+.wedrow{display:grid;gap:6px;padding:10px 0;border-top:1px solid var(--line)}
+.wedrow:first-child{border-top:0}
+.wedh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-weight:700;font-size:.9rem}
+.wedh b{font:600 .86rem var(--mono)} .wedh b.pend{color:var(--muted)} .wedh b.ok{color:var(--spend)}
+.wedg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto auto;gap:6px;align-items:end}
+.wedx{display:grid;grid-template-columns:minmax(0,1fr) 6rem auto auto;gap:6px;align-items:center;font-size:.84rem;color:var(--muted)}
+.wedt{display:grid;gap:8px;border-top:2px solid var(--line);padding-top:12px;margin-top:4px}
+.wedt .wedx span{font-weight:700;color:var(--ink)}
+.wedx input{font:500 .9rem var(--mono);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:8px;min-width:0;width:100%}
 table.wk{min-width:0!important;width:100%}
 table.wk td:first-child,table.wk th:first-child{position:static}
 .edt{font:600 .7rem var(--body);background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:3px 8px;margin-left:6px;cursor:pointer;vertical-align:2px}
@@ -473,6 +484,13 @@ table.wk td:first-child,table.wk th:first-child{position:static}
   <img id="vImg" alt="Receipt photo">
   <div class="va"><button type="button" class="vbtn" id="vShare">Share</button><label class="vbtn alt">Replace<input type="file" accept="image/*" id="vReplace"></label><button type="button" class="vbtn del" id="vDel">Remove photo</button></div>
 </div>
+<div class="msheet" id="wedSheet" hidden role="dialog" aria-modal="true" aria-labelledby="wedTitle">
+  <div class="mpanel">
+    <div class="mhead"><h2 id="wedTitle">Edit wages</h2><button type="button" class="mini" id="wedClose">Done</button></div>
+    <p class="thelp" id="wedHelp"></p>
+    <div id="wedList"></div>
+  </div>
+</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -744,7 +762,7 @@ function renderBook(){
 }
 function bookRow(x){
   const s=x.type==="sale",r=document.createElement("div");r.className="row";
-  r.innerHTML=`<span class="ico ${s?"s":"x"}">${s?"+":"−"}</span><div class="t"><span class="c"></span><small></small></div><span class="amt">${s?"+":"−"}${gbp(x.amount)}</span><div class="acts"></div>`;
+  r.innerHTML=`<span class="ico ${s?"s":"x"}">${s?"+":"−"}</span><div class="t"><span class="c"></span><small></small></div><span class="amt">${(s!==(x.amount<0))?"+":"−"}${gbp(Math.abs(x.amount))}</span><div class="acts"></div>`;
   r.querySelector(".c").textContent=x.category;
   if(!s){const old=r.querySelector(".ico"),b=document.createElement(x.photo?"button":"label");b.className="ico x "+(x.photo?"ph":"add");
     if(b.tagName==="BUTTON")b.type="button";
@@ -753,9 +771,10 @@ function bookRow(x){
     old.replaceWith(b)}
   if(x.paid===false){const t=document.createElement("span");t.className="tag owe";t.textContent="not paid";r.querySelector(".t").insertBefore(t,r.querySelector("small"))}
   if(x.example){const t=document.createElement("span");t.className="tag";t.textContent="example";r.querySelector(".t").insertBefore(t,r.querySelector("small"))}
-  r.querySelector("small").textContent=x.paid===false?"Owed · not in profit until paid":x.billDate?"Bill dated "+short(x.billDate)+" · paid "+short(x.date):x.src==="shift"?x.staff+" · "+x.in+"–"+x.out+" · "+fmtH(x.hours)+" @ "+gbp(x.rate)+"/h":x.staff?"Paid to "+x.staff:x.note||(s?"Sale":x.photo?"Expense · receipt attached":"Expense · no receipt");
+  r.querySelector("small").textContent=x.paid===false?"Owed · not in profit until paid":x.billDate?"Bill dated "+short(x.billDate)+" · paid "+short(x.date):x.src==="adj"?x.staff+" · week total changed":x.src==="shift"?x.staff+" · "+x.in+"–"+x.out+" · "+fmtH(x.hours)+" @ "+gbp(x.rate)+"/h":x.staff?"Paid to "+x.staff:x.note||(s?"Sale":x.photo?"Expense · receipt attached":"Expense · no receipt");
   if(canWrite&&db){const acts=r.querySelector(".acts");
     const ed=document.createElement("button");ed.type="button";ed.className="mini";ed.textContent="Edit";
+    if((x.src==="shift"||x.src==="adj")&&x.staff){ed.onclick=()=>openWageEdit(x.staff,weekOf(x.date)[0])}else
     ed.onclick=()=>{const amt=r.querySelector(".amt");const inp=document.createElement("input");inp.className="ed";inp.inputMode="decimal";inp.value=x.amount.toFixed(2);inp.setAttribute("aria-label","New amount");amt.replaceWith(inp);inp.focus();inp.select();
       acts.innerHTML="";const ok=document.createElement("button");ok.type="button";ok.className="mini ok";ok.textContent="Save";
       const cancel=document.createElement("button");cancel.type="button";cancel.className="mini";cancel.textContent="Cancel";cancel.onclick=renderBook;
@@ -1031,7 +1050,7 @@ function renderStaff(){
     const tin=r.querySelector("[id^=tin]"),tout=r.querySelector("[id^=tout]");
     if(r.dataset.day!==day||r.dataset.v!==(e?e.in+e.out:"")){tin.value=e?e.in:"";tout.value=e?e.out:"";r.dataset.day=day;r.dataset.v=e?e.in+e.out:""}
     r.querySelector(".shclr").hidden=!e;r.querySelector(".shsave").textContent=e?"Update":"Save";
-    const other=sum(entries.filter(x=>x.date===day),x=>x.category===WAGES&&x.staff===n&&x.src!=="shift");
+    const other=sum(entries.filter(x=>x.date===day),x=>x.category===WAGES&&x.staff===n&&x.src!=="shift"&&x.src!=="adj");
     shiftPreview(r);if(other){const sc=r.querySelector(".sc");sc.textContent=(sc.textContent?sc.textContent+" + ":"")+gbp(other)+" extra"}});
   if(wkFor!==day){wkFor=day;wkOff=0}
   const[ws,we]=weekOf(addDays(day,wkOff*7)),wk=entries.filter(x=>x.category===WAGES&&x.date>=ws&&x.date<=we);
@@ -1044,12 +1063,13 @@ function renderStaff(){
   const oldNote=oldAmt>0?`<button type="button" class="note wkold" id="wkOld">Wages not paid from ${oldWeeks.size} earlier week${oldWeeks.size>1?"s":""}: <b>${gbp(oldAmt)}</b> · tap to see</button>`:"";
   const wire=()=>{$("wkPrev").onclick=()=>{wkOff--;renderStaff()};$("wkNext").onclick=()=>{wkOff++;renderStaff()};if($("wkNow"))$("wkNow").onclick=()=>{wkOff=0;renderStaff()};
     if($("wkOld"))$("wkOld").onclick=()=>{const[dw]=weekOf(day);wkOff=Math.round((parse(oldLatest)-parse(dw))/(7*864e5));renderStaff()}};
-  if(!wk.length){el.innerHTML=nav+oldNote+`<p class="thelp">No hours or wages entered for this week.</p>`;wire();$("waWk").hidden=true;return}
+  if(!wk.length){el.innerHTML=nav+oldNote+`<p class="thelp">No hours or wages entered for this week.</p>`+(staffOn().length?`<div class="brow2">${staffOn().map((n,i)=>`<button type="button" class="mini" data-a="${i}">Add ${esc(n)}'s hours</button>`).join("")}</div>`:"");
+    el.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>openWageEdit(staffOn()[+b.dataset.a],ws));wire();$("waWk").hidden=true;return}
   const people=[...new Set(wk.map(x=>x.staff||"Other"))];let H=0,P=0,PD=0;
   const info=people.map(p=>{const xs=wk.filter(x=>(x.staff||"Other")===p),h=xs.reduce((a,x)=>a+(x.hours||0),0),pay=Math.round(xs.reduce((a,x)=>a+x.amount,0)*100)/100,days=new Set(xs.filter(x=>x.hours).map(x=>x.date)).size,
     rec=WPAID[ws+"|"+p],paidAmt=rec?Math.min(rec.amt,pay):0,due=Math.round((pay-(rec?rec.amt:0))*100)/100;H+=h;P+=pay;PD+=paidAmt;return{p,h,pay,days,rec,due}});
   const rows=info.map((r,i)=>{const st=!r.rec?["false","✗ Not paid",""]:r.due>0.004?["false","Owes "+gbp(r.due)," part"]:["true","✓ Paid",""];
-    return `<tr><td>${esc(r.p)}</td><td>${r.days||"–"}</td><td>${r.h?fmtH(r.h):"–"}</td><td>${gbp(r.pay)}</td><td class="pc"><button type="button" class="pd${st[2]}" aria-pressed="${st[0]}" data-i="${i}" title="${r.rec?"Paid "+short(r.rec.on)+" · "+gbp(r.rec.amt):"Tap when you pay "+esc(r.p)}">${st[1]}</button></td></tr>`}).join("");
+    return `<tr><td>${r.p==="Other"?esc(r.p):`<button type="button" class="wkname" data-e="${i}">${esc(r.p)}<span>Edit</span></button>`}</td><td>${r.days||"–"}</td><td>${r.h?fmtH(r.h):"–"}</td><td>${gbp(r.pay)}</td><td class="pc"><button type="button" class="pd${st[2]}" aria-pressed="${st[0]}" data-i="${i}" title="${r.rec?"Paid "+short(r.rec.on)+" · "+gbp(r.rec.amt):"Tap when you pay "+esc(r.p)}">${st[1]}</button></td></tr>`}).join("");
   const DUE=Math.round((P-PD)*100)/100;
   el.innerHTML=nav+oldNote+`<div class="tbl" style="margin:0;padding:0"><table class="wk"><thead><tr><th>Staff</th><th>Days</th><th>Hours</th><th>Pay</th><th>Paid?</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td>Total</td><td></td><td>${fmtH(H)}</td><td>${gbp(P)}</td><td></td></tr></tfoot></table></div>
     <div class="wkpaid"><div><span class="lbl">Paid</span><b style="color:var(--good)">${gbp(PD)}</b></div><div><span class="lbl">Still to pay</span><b style="color:${DUE>0.004?"var(--owe)":"var(--muted)"}">${gbp(Math.max(0,DUE))}</b></div></div>`;
@@ -1057,6 +1077,7 @@ function renderStaff(){
     b.onclick=()=>{if(!r.rec||r.due>0.004){WPAID[k]={amt:r.pay,on:iso(new Date())};if(saveWPaid()){toast(r.p+" marked as paid "+gbp(r.pay)+" for "+wname.toLowerCase());renderStaff()}return}
       if(!b.classList.contains("arm")){b.classList.add("arm");b.textContent="Tap again to undo";setTimeout(()=>{if(b.isConnected){b.classList.remove("arm");b.textContent="✓ Paid"}},3000);return}
       delete WPAID[k];if(saveWPaid()){toast(r.p+" changed back to not paid");renderStaff()}}});
+  el.querySelectorAll(".wkname").forEach(b=>b.onclick=()=>openWageEdit(info[+b.dataset.e].p,ws));
   wire();
   {const wsales=sum(entries.filter(x=>x.date>=ws&&x.date<=we),x=>x.type==="sale");const pct=document.createElement("p");pct.className="thelp";pct.textContent=wsales?"Wages are "+Math.round(P/wsales*100)+"% of this week's sales ("+gbp0(wsales)+").":"No sales entered this week yet, so no wages % to show.";el.appendChild(pct)}
   let t="*Shalimar Grill wages*\n"+short(ws)+" – "+short(we)+"\n\n";
@@ -1064,6 +1085,64 @@ function renderStaff(){
   t+="\n*Total: "+fmtH(H)+" · "+gbp(P)+"*\nPaid: "+gbp(PD)+" · Still to pay: "+gbp(Math.max(0,DUE));
   {const wsales=sum(entries.filter(x=>x.date>=ws&&x.date<=we),x=>x.type==="sale");if(wsales)t+="\nWages are "+Math.round(P/wsales*100)+"% of sales ("+gbp0(wsales)+")"}
   const a=$("waWk");a.hidden=false;a.textContent="Send "+wname.toLowerCase().replace(/^week of/,"week of")+"'s wages on WhatsApp";a.href="https://wa.me/?text="+encodeURIComponent(t)}
+let wedFor=null;
+function openWageEdit(n,ws){wedFor={n,ws};drawWageEdit();$("wedSheet").hidden=false}
+function closeWageEdit(){$("wedSheet").hidden=true;wedFor=null}
+$("wedClose").onclick=closeWageEdit;
+$("wedSheet").addEventListener("click",e=>{if(e.target===$("wedSheet"))closeWageEdit()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("wedSheet").hidden)closeWageEdit()});
+function drawWageEdit(){if(!wedFor)return;const{n,ws}=wedFor,we=addDays(ws,6),cur=rateOf(n);
+  $("wedTitle").textContent=n+" · "+short(ws)+" – "+short(we);
+  $("wedHelp").textContent="Change the in and out times for any day and tap Save. Leave a day empty if "+n+" didn't work. "+(cur?"New shifts use "+gbp(cur)+"/h. Shifts already saved keep the rate they were saved with.":"Set "+n+"'s hourly rate in Edit staff first.");
+  const el=$("wedList");el.innerHTML="";
+  for(let i=0;i<7;i++){const d=addDays(ws,i),e=shiftOf(n,d),row=document.createElement("div");row.className="wedrow";
+    row.innerHTML=`<div class="wedh"><span></span><b></b></div><div class="wedg"><label class="tm"><span>In</span><input type="time" step="300"></label><label class="tm"><span>Out</span><input type="time" step="300"></label><button type="button" class="shsave">${e?"Save":"Add"}</button><button type="button" class="mini shclr"${e?"":" hidden"}>Clear</button></div>`;
+    row.querySelector(".wedh span").textContent=short(d);
+    const[tin,tout]=row.querySelectorAll("input[type=time]"),sv=row.querySelector(".shsave"),clr=row.querySelector(".shclr"),pv=row.querySelector(".wedh b");
+    tin.setAttribute("aria-label",n+" in time "+short(d));tout.setAttribute("aria-label",n+" out time "+short(d));
+    if(e){tin.value=e.in;tout.value=e.out}
+    const prev=()=>{const h=hoursBetween(tin.value,tout.value),rate=e&&e.rate?e.rate:cur,same=e&&e.in===tin.value&&e.out===tout.value;
+      if(h==null){pv.textContent="";pv.className="";return}pv.textContent=fmtH(h)+(rate?" · "+gbp(same?e.amount:Math.round(h*rate*100)/100):"");pv.className=same?"ok":"pend"};
+    tin.addEventListener("input",prev);tout.addEventListener("input",prev);prev();
+    sv.onclick=async()=>{const a=tin.value,b=tout.value;if(!a||!b){toast("Enter both the in and out time",1);(a?tout:tin).focus();return}
+      const rate=e&&e.rate?e.rate:cur;if(!rate){toast("Set "+n+"'s hourly rate first",1);return}
+      const h=hoursBetween(a,b);if(h>16){toast("That's "+fmtH(h)+". Check the times",1);return}
+      const pay=Math.round(h*rate*100)/100,data={in:a,out:b,hours:h,rate,amount:pay,note:n+" "+a+"–"+b};sv.disabled=true;
+      try{if(e)await db.collection("entries").doc(e.id).update(data);else await db.collection("entries").add({type:"expense",date:d,category:WAGES,staff:n,src:"shift",created:Date.now(),...data});
+        toast(short(d)+": "+fmtH(h)+" · "+gbp(pay)+(e?" updated":" added"));drawWageEdit()}catch(err){toast("Couldn't save. Try again.",1);sv.disabled=false}};
+    clr.onclick=async()=>{if(!clr.classList.contains("arm")){clr.classList.add("arm");clr.textContent="Sure?";setTimeout(()=>{if(clr.isConnected){clr.classList.remove("arm");clr.textContent="Clear"}},3000);return}
+      try{await db.collection("entries").doc(e.id).delete();toast(short(d)+" shift removed");drawWageEdit()}catch(err){toast("Couldn't remove. Try again.",1)}};
+    // other (non-shift) wage payments that day
+    entries.filter(x=>x.category===WAGES&&x.staff===n&&x.date===d&&x.src!=="shift"&&x.src!=="adj").forEach(x=>{const r2=document.createElement("div");r2.className="wedx";
+      r2.innerHTML=`<span>Extra payment</span><input inputmode="decimal" aria-label="Extra payment amount"><button type="button" class="mini ok">Save</button><button type="button" class="mini">Delete</button>`;
+      const ai=r2.querySelector("input"),[ok,dl]=r2.querySelectorAll("button");ai.value=x.amount.toFixed(2);
+      ok.onclick=async()=>{const v=parseFloat(ai.value.replace(/[£,\s]/g,""));if(!(v>0)){toast("Enter an amount above £0",1);return}try{await db.collection("entries").doc(x.id).update({amount:Math.round(v*100)/100});toast("Updated to "+gbp(v));drawWageEdit()}catch(err){toast("Couldn't update",1)}};
+      dl.onclick=async()=>{if(!dl.classList.contains("arm")){dl.classList.add("arm");dl.textContent="Sure?";return}try{await db.collection("entries").doc(x.id).delete();toast("Payment deleted");drawWageEdit()}catch(err){toast("Couldn't delete",1)}};
+      row.appendChild(r2)});
+    el.appendChild(row)}
+  const wk=entries.filter(x=>x.category===WAGES&&x.staff===n&&x.date>=ws&&x.date<=we),H=wk.reduce((a,x)=>a+(x.hours||0),0),P=Math.round(wk.reduce((a,x)=>a+x.amount,0)*100)/100,
+    adj=wk.find(x=>x.src==="adj"),base=Math.round((P-(adj?adj.amount:0))*100)/100,k=ws+"|"+n,rec=WPAID[k];
+  const box=document.createElement("div");box.className="wedt";
+  box.innerHTML=`<p class="thelp"><b>Hours this week: ${fmtH(H)} · worked out pay ${gbp(base)}</b>${adj?` · changed to ${gbp(P)}`:""}</p>
+    <div class="wedx"><span>Week total £</span><input inputmode="decimal" id="wedTot" aria-label="Week total pay"><button type="button" class="mini ok" id="wedTotS">Save</button><button type="button" class="mini" id="wedTotR"${adj?"":" hidden"}>Reset</button></div>
+    <div class="wedx"><span>Paid so far £</span><input inputmode="decimal" id="wedPaid" placeholder="0.00" aria-label="Amount paid so far"><button type="button" class="mini ok" id="wedPaidS">Save</button><button type="button" class="mini" id="wedPaidF">Paid all</button></div>
+    <p class="thelp" id="wedPaidInfo"></p>`;
+  $("wedList").appendChild(box);
+  $("wedTot").value=P.toFixed(2);$("wedPaid").value=rec?rec.amt.toFixed(2):"";
+  const due=Math.round((P-(rec?rec.amt:0))*100)/100;
+  $("wedPaidInfo").textContent=!rec?"Not paid yet. Still to pay "+gbp(P)+".":due>0.004?"Paid "+gbp(rec.amt)+" on "+short(rec.on)+". Still to pay "+gbp(due)+".":due<-0.004?"Paid "+gbp(rec.amt)+", which is "+gbp(-due)+" more than the week total.":"Fully paid on "+short(rec.on)+" ✓";
+  const setAdj=async v=>{const diff=Math.round((v-base)*100)/100;
+    try{if(Math.abs(diff)<0.005){if(adj)await db.collection("entries").doc(adj.id).delete()}
+      else if(adj)await db.collection("entries").doc(adj.id).update({amount:diff});
+      else{const ld=wk.filter(x=>x.src!=="adj").map(x=>x.date).sort().pop()||ws;await db.collection("entries").add({type:"expense",date:ld,category:WAGES,staff:n,src:"adj",amount:diff,note:n+" week total adjusted",created:Date.now()})}
+      toast(n+"'s week total is now "+gbp(v));drawWageEdit()}catch(err){toast("Couldn't save. Try again.",1)}};
+  $("wedTotS").onclick=()=>{const v=parseFloat($("wedTot").value.replace(/[£,\s]/g,""));if(!(v>=0)){toast("Enter the week total, like 250.00",1);return}setAdj(Math.round(v*100)/100)};
+  $("wedTotR").onclick=()=>setAdj(base);
+  const setPaid=v=>{if(!(v>0)){delete WPAID[k]}else WPAID[k]={amt:Math.round(v*100)/100,on:rec&&rec.on?rec.on:iso(new Date())};
+    if(v>0&&(!rec||Math.abs(rec.amt-v)>0.004))WPAID[k].on=iso(new Date());
+    if(saveWPaid()){toast(v>0?n+": paid "+gbp(v)+" for this week":n+" changed to not paid");render();drawWageEdit()}};
+  $("wedPaidS").onclick=()=>{const t=$("wedPaid").value.trim();if(!t){setPaid(0);return}const v=parseFloat(t.replace(/[£,\s]/g,""));if(!(v>=0)){toast("Enter how much you've paid, like 150.00",1);return}setPaid(v)};
+  $("wedPaidF").onclick=()=>setPaid(P)}
 rebuildRows();
 function lastBackup(){try{return +localStorage.getItem(BKEY)||0}catch(e){return 0}}
 function remind(){const lb=lastBackup(),days=lb?Math.floor((Date.now()-lb)/864e5):null;
