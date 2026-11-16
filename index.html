@@ -97,6 +97,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .hsplit .num{font-size:1.05rem}
 .hmeta{display:flex;flex-wrap:wrap;gap:6px}
 .hmeta .chip.owe{color:#F2B537}
+.hmeta .chip.draw{color:#C9B8FF}
 .hmeta .chip{background:var(--hero-line);color:var(--hero-ink);white-space:normal}
 .hmeta .chip.up{color:#5FD8A4} .hmeta .chip.down{color:#FF8A80}
 .meter{height:6px;border-radius:3px;background:var(--hero-line);overflow:hidden;display:flex}
@@ -287,6 +288,24 @@ table.wk td:first-child,table.wk th:first-child{position:static}
 .ico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font:700 .8rem var(--display)}
 .ico.s{background:var(--soft);background:color-mix(in srgb,var(--sale) 14%,transparent);color:var(--sale)}
 .ico.x{background:var(--soft);background:color-mix(in srgb,var(--spend) 14%,transparent);color:var(--spend)}
+.ico.d{background:var(--soft);background:color-mix(in srgb,var(--draw) 16%,transparent);color:var(--draw)}
+:root{--draw:#6B4FBB} @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--draw:#A992F0}} :root[data-theme="dark"]{--draw:#A992F0}
+.drow{display:flex;gap:8px;align-items:center}
+.drow #drawAmt{flex:0 0 6.5rem}
+.drow #drawNote{flex:1 1 auto}
+.drow .plus{flex:none;margin:0}
+.drow input{font:500 1rem var(--mono);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:11px 10px;min-width:0;width:100%}
+.drow input.dn{font-family:var(--body);font-size:.92rem}
+.plus.d{background:var(--draw);border-color:var(--draw);color:#fff}
+.dlist{display:grid;gap:6px;margin-top:10px}
+.dlist .di{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--soft);border-radius:10px;padding:8px 10px;font-size:.88rem}
+.dlist .di b{font:600 .92rem var(--mono);color:var(--draw)}
+.dlist .di span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dsum{display:grid;gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.dsum div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 14px;border-top:1px solid var(--line)}
+.dsum div:first-child{border-top:0}
+.dsum b{font:600 1rem var(--mono)}
+.dsum .tot{background:var(--soft)} .dsum .tot b{font-size:1.15rem}
 .row .t{min-width:0;font-weight:600;font-size:.9rem;overflow-wrap:break-word}
 .row .t small{display:block;font-weight:500;color:var(--muted);font-size:.75rem}
 .row .amt{font:600 .9rem var(--mono);font-variant-numeric:tabular-nums}
@@ -362,6 +381,13 @@ table.wk td:first-child,table.wk th:first-child{position:static}
     </section>
   </div>
 
+  <section class="card" data-in="day" id="drawCard">
+    <div class="ehead"><h2>Money taken out</h2><span class="num" id="dDraw" style="color:var(--draw)">£0.00</span></div>
+    <p class="thelp">Cash or money you take from the business for yourself. It isn't an expense, so it doesn't change your profit, but it's taken off what's left in the business.</p>
+    <div class="drow"><input id="drawAmt" inputmode="decimal" placeholder="£" autocomplete="off" aria-label="Amount taken out"><input id="drawNote" class="dn" placeholder="Note (optional)" autocomplete="off" aria-label="Note for money taken out"><button type="button" class="plus d" id="drawAdd" aria-label="Add money taken out">+</button></div>
+    <div class="dlist" id="drawList"></div>
+  </section>
+
   <section class="card paycard" data-in="day" id="payCard">
     <div class="ehead"><h2>Not paid yet</h2><span class="num" id="payTot" style="color:var(--owe)">£0.00</span></div>
     <p class="thelp" id="payHelp">Bills you still owe suppliers. They don't count in your expenses or profit until you mark them as paid.</p>
@@ -398,6 +424,18 @@ table.wk td:first-child,table.wk th:first-child{position:static}
   </section>
 
   <button type="button" class="note owenote" id="sumOwe" data-in="sum" hidden></button>
+
+  <section class="card" data-in="sum" id="drawSum">
+    <h2>After money taken out</h2>
+    <div class="dsum">
+      <div><span>Sales</span><b id="ksS" style="color:var(--sale)">£0.00</b></div>
+      <div><span>Expenses</span><b id="ksE" style="color:var(--spend)">− £0.00</b></div>
+      <div><span>Profit</span><b id="ksP">£0.00</b></div>
+      <div><span>Money taken out</span><b id="ksD" style="color:var(--draw)">− £0.00</b></div>
+      <div class="tot"><span><strong>Left in the business</strong></span><b id="ksL">£0.00</b></div>
+    </div>
+    <p class="thelp" id="ksHelp" style="margin-top:8px"></p>
+  </section>
   <section class="stats" data-in="sum" aria-label="Key figures">
     <div class="stat"><span class="lbl">Avg sales / day</span><b id="sAvg">–</b><small id="sDays">0 days traded</small></div>
     <div class="stat"><span class="lbl">Best day</span><b id="sBest">–</b><small id="sBestD">–</small></div>
@@ -441,6 +479,7 @@ table.wk td:first-child,table.wk th:first-child{position:static}
         <button type="button" data-f="expense" aria-pressed="false">Expenses</button>
         <button type="button" data-f="receipts" aria-pressed="false">Receipts</button>
         <button type="button" data-f="unpaid" aria-pressed="false">Not paid</button>
+        <button type="button" data-f="draw" aria-pressed="false">Taken out</button>
       </div>
     </div>
     <select id="tabF" class="tabf" aria-label="Show one tab or supplier"></select>
@@ -512,6 +551,7 @@ const DEFAULT_TABS=[
 let TABS=(()=>{try{const t=JSON.parse(localStorage.getItem(TKEY)||"null");if(Array.isArray(t)&&t.length)return t.filter(x=>x&&x.n&&(x.k==="sale"||x.k==="expense"))}catch(e){}return DEFAULT_TABS.map(x=>({...x}))})();
 function saveTabs(){try{localStorage.setItem(TKEY,JSON.stringify(TABS))}catch(e){toast("Couldn't save tabs on this phone",1)}}
 const PALETTE=["var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c1)","var(--c6)","var(--c7)","var(--c8)"];
+const DRAW="Money taken out";
 let SALE_CATS=[],EXP_CATS=[],APPS=[],FOOD=[],SALE_COL=[];
 function syncTabs(){
   if(!TABS.some(t=>t.w)){const ex=TABS.find(t=>t.k==="expense"&&t.n===WAGES);if(ex){ex.w=true;ex.hid=false}else TABS.push({n:WAGES,k:"expense",w:true})}
@@ -647,12 +687,26 @@ async function addEntry(type,c,inp,btn,staff){
   catch(err){toast("Couldn't save that. Try again.",1)}
   btn.disabled=false}
 function setDay(d){day=d;$("dDate").value=d;renderDay();updateShare()}
+function drawDay(xs,td){$("dDraw").textContent=gbp(td);const el=$("drawList");el.innerHTML="";
+  xs.filter(x=>x.type==="draw").sort((a,b)=>(a.created||0)-(b.created||0)).forEach(x=>{const r=document.createElement("div");r.className="di";
+    r.innerHTML='<span></span><b></b><button type="button" class="mini">Delete</button>';r.querySelector("span").textContent=x.note||"Taken out";r.querySelector("b").textContent=gbp(x.amount);
+    const d=r.querySelector("button");d.onclick=async()=>{if(!d.classList.contains("arm")){d.classList.add("arm");d.textContent="Sure?";setTimeout(()=>{if(d.isConnected){d.classList.remove("arm");d.textContent="Delete"}},3000);return}
+      try{await db.collection("entries").doc(x.id).delete();toast("Removed")}catch(e){toast("Couldn't delete. Try again.",1)}};
+    el.appendChild(r)})}
+async function addDraw(){const inp=$("drawAmt"),btn=$("drawAdd"),amt=parseFloat((inp.value||"").replace(/[£,\s]/g,""));
+  if(!(amt>0)){toast("Enter the amount you took out, like 200",1);inp.focus();return}
+  if(!db||!canWrite){toast("Saving isn't available in this view",1);return}
+  btn.disabled=true;const note=$("drawNote").value.trim().slice(0,80);
+  try{await db.collection("entries").add({type:"draw",date:day,amount:Math.round(amt*100)/100,category:DRAW,note,created:Date.now()});inp.value="";$("drawNote").value="";toast(gbp(amt)+" recorded as money taken out")}
+  catch(e){toast("Couldn't save that. Try again.",1)}btn.disabled=false}
+$("drawAdd").onclick=addDraw;$("drawAmt").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();addDraw()}});$("drawNote").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();addDraw()}});
 function renderDay(){
   const t=iso(new Date()),xs=entries.filter(x=>x.date===day);
   $("dTitle").textContent=day===t?"Today":day===addDays(t,-1)?"Yesterday":parse(day).toLocaleDateString("en-GB",{weekday:"long"});
   $("dSub").textContent=parse(day).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
   $("dToday").hidden=day===t;
-  const ts=sum(xs,x=>x.type==="sale"),te=sum(xs,x=>x.type==="expense"),tp=ts-te;
+  const ts=sum(xs,x=>x.type==="sale"),te=sum(xs,x=>x.type==="expense"),tp=ts-te,td=sum(xs,x=>x.type==="draw");
+  drawDay(xs,td);
   $("dSales").textContent=$("dSales2").textContent=gbp(ts);$("dExp").textContent=$("dExp2").textContent=gbp(te);
   const p=$("dProfit");p.textContent=gbp(tp);p.className="big num "+(tp<0?"neg":tp>0?"pos":"");
   // meter: sales mix
@@ -663,6 +717,7 @@ function renderDay(){
   const chip=(txt,cls)=>{const c=document.createElement("span");c.className="chip "+(cls||"");c.textContent=txt;meta.appendChild(c)};
   if(ts&&ls){const d=(ts-ls)/ls*100;chip((d>=0?"▲ ":"▼ ")+Math.abs(d).toFixed(0)+"% sales vs last "+parse(day).toLocaleDateString("en-GB",{weekday:"short"}),d>=0?"up":"down")}
   if(ts)chip("Margin "+(tp/ts*100).toFixed(0)+"%");
+  if(td)chip("Taken out "+gbp0(td)+" · "+gbp0(tp-td)+" left","draw");
   {const w=sum(xs,x=>x.type==="expense"&&x.category===WAGES);if(ts&&w)chip("Wages "+Math.round(w/ts*100)+"% of sales")}
   if(ts){const a=sum(xs,x=>x.type==="sale"&&APPS.includes(x.category));chip("Apps "+Math.round(a/ts*100)+"% · Counter "+Math.round((ts-a)/ts*100)+"%")}
   {const ol=owedList();if(ol.length)chip(gbp0(ol.reduce((a,x)=>a+x.amount,0))+" not paid to suppliers","owe")}
@@ -688,6 +743,9 @@ function renderSum(){
   if(period==="week"){$("sWkLbl").innerHTML=(sumWk===0?"This week":sumWk===-1?"Last week":sumWk===1?"Next week":"Week of "+short(iso(R.s)))+"<small>"+short(iso(R.s))+" – "+short(iso(R.e))+"</small>";$("sWkNow").hidden=sumWk===0}
   weekTable(R);
   const ts=sum(list,x=>x.type==="sale"),te=sum(list,x=>x.type==="expense"),tp=ts-te,m=ts?tp/ts*100:null;
+  {const td=sum(list,x=>x.type==="draw"),left=tp-td;$("ksS").textContent=gbp(ts);$("ksE").textContent="− "+gbp(te);$("ksP").textContent=gbp(tp);$("ksD").textContent="− "+gbp(td);
+   const kl=$("ksL");kl.textContent=gbp(left);kl.style.color=left<0?"var(--bad)":"var(--good)";
+   $("ksHelp").textContent=!td?"Nothing taken out in this period.":left<0?"You've taken out "+gbp(-left)+" more than the business made in this period.":"You've taken out "+Math.round(td/(tp>0?tp:1)*100)+"% of the profit."}
   let ps=null,pe=null,pp=null,pm=null;
   if(R.prev){const pl=inRange(R.prev[0],R.prev[1]);ps=sum(pl,x=>x.type==="sale");pe=sum(pl,x=>x.type==="expense");pp=ps-pe;pm=ps?pp/ps*100:null;if(!pl.length)ps=pe=pp=pm=null}
   $("kSales").textContent=gbp(ts);$("kExp").textContent=gbp(te);
@@ -711,7 +769,7 @@ function renderSum(){
   const b=[];
   if(R.unit==="day"){for(let d=new Date(R.s);d<=R.e;d.setDate(d.getDate()+1))b.push({k:iso(d),l:String(d.getDate()),s:0,x:0})}
   else{for(let d=new Date(R.s.getFullYear(),R.s.getMonth(),1);d<=R.e;d.setMonth(d.getMonth()+1))b.push({k:iso(d).slice(0,7),l:d.toLocaleDateString("en-GB",{month:"short"}),s:0,x:0})}
-  const bm=new Map(b.map(x=>[x.k,x]));list.forEach(x=>{if(x.paid===false)return;const k=bm.get(R.unit==="day"?x.date:x.date.slice(0,7));if(k){if(x.type==="sale")k.s+=x.amount;else k.x+=x.amount}});
+  const bm=new Map(b.map(x=>[x.k,x]));list.forEach(x=>{if(x.paid===false)return;const k=bm.get(R.unit==="day"?x.date:x.date.slice(0,7));if(k){if(x.type==="sale")k.s+=x.amount;else if(x.type==="expense")k.x+=x.amount}});
   $("chartTitle").textContent=R.unit==="day"?"Day by day":"Month by month";
   drawChart(b);drawMix(list.filter(x=>x.type==="sale"),ts);expBars(list.filter(x=>x.type==="expense"),te);table(list);
 }
@@ -719,14 +777,14 @@ function wkLbl(a,b){const A=parse(a),B=parse(b),m=d=>d.toLocaleDateString("en-GB
 function weekTable(R){const card=$("wbwCard"),el=$("wbw");
   if(period==="week"){card.hidden=true;return}card.hidden=false;
   const[first]=weekOf(iso(R.s)),last=iso(R.e),rows=[];
-  const rs=iso(R.s);for(let w0=first;w0<=last;w0=addDays(w0,7)){const ws=w0<rs?rs:w0,w6=addDays(w0,6),we=w6>last?last:w6,part=ws!==w0||we!==w6,xs=entries.filter(x=>x.date>=ws&&x.date<=we),sl=sum(xs,x=>x.type==="sale"),ex=sum(xs,x=>x.type==="expense"),wg=sum(xs,x=>x.type==="expense"&&x.category===WAGES);
-    rows.push({ws,we,w0,part,sl,ex,wg,pr:sl-ex,n:xs.length})}
+  const rs=iso(R.s);for(let w0=first;w0<=last;w0=addDays(w0,7)){const ws=w0<rs?rs:w0,w6=addDays(w0,6),we=w6>last?last:w6,part=ws!==w0||we!==w6,xs=entries.filter(x=>x.date>=ws&&x.date<=we),sl=sum(xs,x=>x.type==="sale"),ex=sum(xs,x=>x.type==="expense"),wg=sum(xs,x=>x.type==="expense"&&x.category===WAGES),dr=sum(xs,x=>x.type==="draw");
+    rows.push({ws,we,w0,part,sl,ex,wg,dr,pr:sl-ex,n:xs.length})}
   const shown=rows.filter(r=>r.n).reverse();
   if(!shown.length){el.innerHTML='<p class="empty">Nothing recorded in this period.</p>';return}
-  let T={sl:0,ex:0,wg:0,pr:0};
-  const body=shown.map(r=>{T.sl+=r.sl;T.ex+=r.ex;T.wg+=r.wg;T.pr+=r.pr;
-    return `<tr data-ws="${r.w0}"><td>${wkLbl(r.ws,r.we)}${r.part?' <span class="tag">part</span>':""}</td><td class="st">${gbp0(r.sl)}</td><td class="xt">${gbp0(r.ex)}</td><td>${gbp0(r.wg)}</td><td class="${r.pr<0?"neg":"pos"}">${gbp0(r.pr)}</td><td>${r.sl?Math.round(r.pr/r.sl*100)+"%":"–"}</td></tr>`}).join("");
-  el.innerHTML=`<table><thead><tr><th>Week</th><th>Sales</th><th>Expenses</th><th>Wages</th><th>Profit</th><th>Margin</th></tr></thead><tbody>${body}</tbody><tfoot><tr><td>Total</td><td>${gbp0(T.sl)}</td><td>${gbp0(T.ex)}</td><td>${gbp0(T.wg)}</td><td class="${T.pr<0?"neg":"pos"}">${gbp0(T.pr)}</td><td>${T.sl?Math.round(T.pr/T.sl*100)+"%":"–"}</td></tr></tfoot></table>`;
+  let T={sl:0,ex:0,wg:0,pr:0,dr:0};
+  const body=shown.map(r=>{T.sl+=r.sl;T.ex+=r.ex;T.wg+=r.wg;T.pr+=r.pr;T.dr+=r.dr;
+    return `<tr data-ws="${r.w0}"><td>${wkLbl(r.ws,r.we)}${r.part?' <span class="tag">part</span>':""}</td><td class="st">${gbp0(r.sl)}</td><td class="xt">${gbp0(r.ex)}</td><td>${gbp0(r.wg)}</td><td class="${r.pr<0?"neg":"pos"}">${gbp0(r.pr)}</td><td>${r.sl?Math.round(r.pr/r.sl*100)+"%":"–"}</td><td style="color:var(--draw)">${r.dr?gbp0(r.dr):"–"}</td><td class="${r.pr-r.dr<0?"neg":""}">${gbp0(r.pr-r.dr)}</td></tr>`}).join("");
+  el.innerHTML=`<table><thead><tr><th>Week</th><th>Sales</th><th>Expenses</th><th>Wages</th><th>Profit</th><th>Margin</th><th>Taken out</th><th>Left</th></tr></thead><tbody>${body}</tbody><tfoot><tr><td>Total</td><td>${gbp0(T.sl)}</td><td>${gbp0(T.ex)}</td><td>${gbp0(T.wg)}</td><td class="${T.pr<0?"neg":"pos"}">${gbp0(T.pr)}</td><td>${T.sl?Math.round(T.pr/T.sl*100)+"%":"–"}</td><td style="color:var(--draw)">${gbp0(T.dr)}</td><td class="${T.pr-T.dr<0?"neg":""}">${gbp0(T.pr-T.dr)}</td></tr></tfoot></table>`;
   el.querySelectorAll("tbody tr").forEach(tr=>tr.onclick=()=>{const[cw]=weekOf(iso(new Date()));sumWk=Math.round((parse(tr.dataset.ws)-parse(cw))/(7*864e5));
     period="week";document.querySelectorAll(".periods button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.p==="week"));renderSum();renderBook();updateShare();window.scrollTo({top:0,behavior:"smooth"})})}
 function nice(v){if(v<=0)return 100;const p=Math.pow(10,Math.floor(Math.log10(v)));const f=v/p;return(f<=1?1:f<=2?2:f<=5?5:10)*p}
@@ -784,22 +842,22 @@ function renderBook(){
   if(!list.length){el.innerHTML=`<p class="empty">${entries.length?(filter==="unpaid"?"Nothing owed. Every bill is paid.":tabFilter?"Nothing for "+tabFilter.split("|")[1]+" in this period. Try another month at the top.":filter==="receipts"?"No receipt photos in this period. Tap the camera next to an expense to add one.":"Nothing recorded here for this period."):"No entries yet. Add your first sale or expense on the Daily sheet."}</p>`;return}
   const days=new Map();[...list].sort((a,b)=>b.date.localeCompare(a.date)||(b.created||0)-(a.created||0)).forEach(x=>{if(!days.has(x.date))days.set(x.date,[]);days.get(x.date).push(x)});
   el.innerHTML="";
-  days.forEach((xs,d)=>{const net=xs.reduce((a,x)=>a+(x.paid===false?0:x.type==="sale"?x.amount:-x.amount),0);
+  days.forEach((xs,d)=>{const net=xs.reduce((a,x)=>a+(x.paid===false?0:x.type==="sale"?x.amount:x.type==="expense"||(filter==="draw"&&x.type==="draw")?-x.amount:0),0);
     const h=document.createElement("div");h.className="day";h.innerHTML=`<span>${short(d)}</span><span class="num ${net<0?"neg":"pos"}">${net>=0?"+":""}${gbp(net)}</span>`;el.appendChild(h);
     xs.forEach(x=>el.appendChild(bookRow(x)))});
 }
 function bookRow(x){
-  const s=x.type==="sale",r=document.createElement("div");r.className="row";
-  r.innerHTML=`<span class="ico ${s?"s":"x"}">${s?"+":"−"}</span><div class="t"><span class="c"></span><small></small></div><span class="amt">${(s!==(x.amount<0))?"+":"−"}${gbp(Math.abs(x.amount))}</span><div class="acts"></div>`;
+  const s=x.type==="sale",dw=x.type==="draw",r=document.createElement("div");r.className="row";
+  r.innerHTML=`<span class="ico ${s?"s":dw?"d":"x"}">${s?"+":dw?"↑":"−"}</span><div class="t"><span class="c"></span><small></small></div><span class="amt">${(s!==(x.amount<0))?"+":"−"}${gbp(Math.abs(x.amount))}</span><div class="acts"></div>`;
   r.querySelector(".c").textContent=x.category;
-  if(!s){const old=r.querySelector(".ico"),b=document.createElement(x.photo?"button":"label");b.className="ico x "+(x.photo?"ph":"add");
+  if(x.type==="expense"){const old=r.querySelector(".ico"),b=document.createElement(x.photo?"button":"label");b.className="ico x "+(x.photo?"ph":"add");
     if(b.tagName==="BUTTON")b.type="button";
     if(x.photo){b.setAttribute("aria-label","View receipt");b.onclick=()=>openViewer(x);thumbURL(x.id).then(u=>{if(u){const i=document.createElement("img");i.src=u;i.alt="";b.appendChild(i)}else{b.className="ico x add";b.innerHTML=CAM}})}
     else{b.title="Add receipt photo";b.innerHTML=CAM+'<input type="file" accept="image/*" aria-label="Add receipt photo">';b.querySelector("input").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";if(f)attachPhoto(x,f)})}
     old.replaceWith(b)}
   if(x.paid===false){const t=document.createElement("span");t.className="tag owe";t.textContent="not paid";r.querySelector(".t").insertBefore(t,r.querySelector("small"))}
   if(x.example){const t=document.createElement("span");t.className="tag";t.textContent="example";r.querySelector(".t").insertBefore(t,r.querySelector("small"))}
-  r.querySelector("small").textContent=x.paid===false?"Owed · not in profit until paid":x.billDate?"Bill dated "+short(x.billDate)+" · paid "+short(x.date):x.src==="adj"?x.staff+" · week total changed":x.src==="shift"?x.staff+" · "+x.in+"–"+x.out+" · "+fmtH(x.hours)+" @ "+gbp(x.rate)+"/h":x.staff?"Paid to "+x.staff:x.note||(s?"Sale":x.photo?"Expense · receipt attached":"Expense · no receipt");
+  r.querySelector("small").textContent=dw?(x.note?x.note+" · ":"")+"not an expense, profit unchanged":x.paid===false?"Owed · not in profit until paid":x.billDate?"Bill dated "+short(x.billDate)+" · paid "+short(x.date):x.src==="adj"?x.staff+" · week total changed":x.src==="shift"?x.staff+" · "+x.in+"–"+x.out+" · "+fmtH(x.hours)+" @ "+gbp(x.rate)+"/h":x.staff?"Paid to "+x.staff:x.note||(s?"Sale":x.photo?"Expense · receipt attached":"Expense · no receipt");
   if(canWrite&&db){const acts=r.querySelector(".acts");
     const ed=document.createElement("button");ed.type="button";ed.className="mini";ed.textContent="Edit";
     if((x.src==="shift"||x.src==="adj")&&x.staff){ed.onclick=()=>openWageEdit(x.staff,weekOf(x.date)[0])}else
@@ -828,6 +886,7 @@ function dayText(){
   t+="\n*Expenses: "+gbp(te)+"*\n";
   EXP_CATS.forEach(c=>{const v=sum(xs,x=>x.type==="expense"&&x.category===c);if(v){t+="• "+c+": "+gbp(v)+"\n";if(c===WAGES)STAFF.forEach(p=>{const e=xs.find(x=>x.category===WAGES&&x.staff===p.n&&x.src==="shift"),w=sum(xs,x=>x.category===WAGES&&x.staff===p.n);if(w)t+="   – "+p.n+": "+(e?e.in+"–"+e.out+" ("+fmtH(e.hours)+") · ":"")+gbp(w)+"\n"})}});
   t+="\n*Profit: "+gbp(ts-te)+"*"+(ts?" ("+((ts-te)/ts*100).toFixed(0)+"% margin)":"");
+  {const td=sum(xs,x=>x.type==="draw");if(td)t+="\nMoney taken out: "+gbp(td)+"\n*Left in business: "+gbp(ts-te-td)+"*"}
   return t+owedText()}
 function sumText(){
   const R=range(period),list=inRange(R.s,R.e),ts=sum(list,x=>x.type==="sale"),te=sum(list,x=>x.type==="expense");
@@ -836,6 +895,7 @@ function sumText(){
   t+="\n*Expenses: "+gbp(te)+"*\n";
   EXP_CATS.forEach(c=>{const v=sum(list,x=>x.type==="expense"&&x.category===c);if(v){t+="• "+c+": "+gbp(v)+"\n";if(c===WAGES)STAFF.forEach(p=>{const w=sum(list,x=>x.category===WAGES&&x.staff===p.n),h=list.filter(x=>x.category===WAGES&&x.staff===p.n).reduce((a,x)=>a+(x.hours||0),0);if(w)t+="   – "+p.n+": "+(h?fmtH(h)+" · ":"")+gbp(w)+"\n"})}});
   t+="\n*Profit: "+gbp(ts-te)+"*"+(ts?" ("+((ts-te)/ts*100).toFixed(1)+"% margin)":"");
+  {const td=sum(list,x=>x.type==="draw");if(td)t+="\nMoney taken out: "+gbp(td)+"\n*Left in business: "+gbp(ts-te-td)+"*"}
   {const w=sum(list,x=>x.type==="expense"&&x.category===WAGES);if(ts&&w)t+="\nWages: "+Math.round(w/ts*100)+"% of sales"}
   const nd=new Set(list.filter(x=>x.type==="sale").map(x=>x.date)).size;if(nd)t+="\nAverage sales per day: "+gbp(ts/nd);
   return t+owedText()}
@@ -994,7 +1054,7 @@ $("tabF").addEventListener("change",e=>{tabFilter=e.target.value;renderBook()});
 function bookSummary(list){const el=$("bookSum");if(!tabFilter){el.hidden=true;return}
   const [k,n]=tabFilter.split("|"),tot=list.reduce((a,x)=>a+(x.paid===false?0:x.amount),0),bills=list.filter(x=>x.photo),owed=owedList().filter(x=>(x.type+"|"+x.category)===tabFilter).reduce((a,x)=>a+x.amount,0);
   const per=n===WAGES?STAFF.map(p=>{const xs=list.filter(x=>x.staff===p.n),h=xs.reduce((a,x)=>a+(x.hours||0),0);return[p.n+(h?" · "+fmtH(h):""),xs.reduce((a,x)=>a+x.amount,0)]}).filter(x=>x[1]):[];
-  el.hidden=false;el.innerHTML=(per.length?`<div class="bs" style="grid-column:1/-1">${per.map(([p,v])=>`<div class="pr" style="display:flex;justify-content:space-between;gap:8px"><span>${p.replace(/</g,"&lt;")}</span><b>${gbp(v)}</b></div>`).join("")}</div>`:"")+`<div class="bs"><span class="lbl">${k==="sale"?"Total sales":"Total paid"}</span><b>${gbp(tot)}</b></div><div class="bs"><span class="lbl">Entries</span><b>${list.length}</b></div><div class="bs"><span class="lbl">Bill photos</span><b>${bills.length}</b></div>`+
+  el.hidden=false;el.innerHTML=(per.length?`<div class="bs" style="grid-column:1/-1">${per.map(([p,v])=>`<div class="pr" style="display:flex;justify-content:space-between;gap:8px"><span>${p.replace(/</g,"&lt;")}</span><b>${gbp(v)}</b></div>`).join("")}</div>`:"")+`<div class="bs"><span class="lbl">${k==="sale"?"Total sales":k==="draw"?"Total taken out":"Total paid"}</span><b>${gbp(tot)}</b></div><div class="bs"><span class="lbl">Entries</span><b>${list.length}</b></div><div class="bs"><span class="lbl">Bill photos</span><b>${bills.length}</b></div>`+
     (owed?`<div class="bs" style="grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline"><span class="lbl" style="color:var(--owe)">Not paid yet (owed)</span><b style="color:var(--owe)">${gbp(owed)}</b></div>`:"")+
     (bills.length?`<button type="button" class="bbtn" id="shareBills">Share all ${bills.length} bill${bills.length>1?"s":""}</button>`:"");
   if(bills.length)$("shareBills").onclick=async()=>{const files=[];const R=range(period);
@@ -1196,7 +1256,7 @@ $("clearEx").onclick=doBackup;$("bkSave").onclick=doBackup;$("backupTop").onclic
 $("csvBtn").onclick=async()=>{const R=range(period),list=inRange(R.s,R.e).sort((a,b)=>a.date.localeCompare(b.date));
   if(!list.length){toast("Nothing to export for this period",1);return}
   const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
-  const csv="Date,Type,Tab,Amount (GBP),Note,Staff,In,Out,Hours,Rate,Status,Bill date\n"+list.map(x=>[x.date,x.type==="sale"?"Sale":"Expense",q(x.category),x.amount.toFixed(2),q(x.note||""),q(x.staff||""),x.in||"",x.out||"",x.hours!=null?x.hours:"",x.rate!=null?x.rate:"",x.type==="sale"?"":x.paid===false?"Not paid":x.billDate?"Paid later":"Paid",x.billDate||""].join(",")).join("\n");
+  const csv="Date,Type,Tab,Amount (GBP),Note,Staff,In,Out,Hours,Rate,Status,Bill date\n"+list.map(x=>[x.date,x.type==="sale"?"Sale":x.type==="draw"?"Taken out":"Expense",q(x.category),x.amount.toFixed(2),q(x.note||""),q(x.staff||""),x.in||"",x.out||"",x.hours!=null?x.hours:"",x.rate!=null?x.rate:"",x.type!=="expense"?"":x.paid===false?"Not paid":x.billDate?"Paid later":"Paid",x.billDate||""].join(",")).join("\n");
   if(await shareFile("shalimar-grill-"+iso(R.s)+"-to-"+iso(R.e)+".csv",csv,"text/csv"))toast("CSV ready")};
 function parseCSV(t){const rows=[];let row=[],f="",q=false;
   for(let i=0;i<t.length;i++){const c=t[i];
@@ -1208,7 +1268,7 @@ async function importData(text,name){
   if(/\.json$/i.test(name)||text.trim().startsWith("{")||text.trim().startsWith("[")){
     const j=JSON.parse(text);photos=(j&&j.photos)||{};if(j&&j.wagePaid&&typeof j.wagePaid==="object"){Object.entries(j.wagePaid).forEach(([k,v])=>{if(v&&typeof v.amt==="number"&&!WPAID[k])WPAID[k]=v});saveWPaid()}if(j&&Array.isArray(j.staff)){j.staff.forEach(p=>{if(p&&p.n&&!STAFF.some(x=>x.n===p.n))STAFF.push({n:p.n,hid:!!p.hid,...(p.rate?{rate:p.rate}:{})})});saveStaff()}if(j&&Array.isArray(j.tabs))j.tabs.forEach(t=>{if(t&&t.n&&(t.k==="sale"||t.k==="expense")&&!TABS.some(x=>x.k===t.k&&x.n===t.n))TABS.push({n:t.n,k:t.k,f:!!t.f,hid:!!t.hid,...(t.w?{w:true}:{})})});saveTabs();incoming=(Array.isArray(j)?j:j.entries||[]).filter(x=>x&&x.date&&x.type&&typeof x.amount==="number")}
   else{const r=parseCSV(text.trim());r.shift();
-    incoming=r.filter(x=>x.length>=4&&/^\d{4}-\d{2}-\d{2}$/.test(x[0])).map((x,i)=>({date:x[0],type:/^sale/i.test(x[1])?"sale":"expense",category:x[2],amount:Math.round(parseFloat(x[3])*100)/100,note:x[4]||"",created:Date.now()+i})).filter(x=>x.amount>0)}
+    incoming=r.filter(x=>x.length>=4&&/^\d{4}-\d{2}-\d{2}$/.test(x[0])).map((x,i)=>({date:x[0],type:/^sale/i.test(x[1])?"sale":/^(taken|draw)/i.test(x[1])?"draw":"expense",category:x[2],amount:Math.round(parseFloat(x[3])*100)/100,note:x[4]||"",created:Date.now()+i})).filter(x=>x.amount>0)}
   const sig=x=>[x.billDate||x.date,x.type,x.category,x.amount.toFixed(2),x.created||""].join("|");
   const have=new Map(entries.map(e=>[sig(e),e]));let added=0,pics=0;
   for(const x of incoming){if(x.example)continue;
