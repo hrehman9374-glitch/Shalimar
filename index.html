@@ -161,6 +161,10 @@ label.ico{cursor:pointer}
 .wknav .wl{flex:1;min-width:0;text-align:center;font:700 .88rem var(--display)}
 .wknav .wl small{display:block;font:500 .74rem var(--body);color:var(--muted)}
 .wknav .mini{min-width:38px;min-height:36px;font-size:1rem}
+#sWkNow{font-size:.78rem}
+#wbw table{min-width:0;font-size:.8rem}
+#wbw th,#wbw td{padding:8px 5px}
+#wbw td:first-child{white-space:nowrap}
 table.wk td.pc{text-align:right;white-space:nowrap}
 table.wk .pd{font-size:.72rem;padding:6px 10px;min-height:32px}
 .pd.part{background:var(--owe);border-color:var(--owe);color:#fff}
@@ -375,12 +379,13 @@ table.wk td:first-child,table.wk th:first-child{position:static}
   <!-- SUMMARY + BOOK period bar -->
   <div class="pbar" data-in="sum book">
     <div class="periods" role="group" aria-label="Period">
-      <button type="button" data-p="week" aria-pressed="false">This week</button>
+      <button type="button" data-p="week" aria-pressed="false">Week</button>
       <button type="button" data-p="month" aria-pressed="true">This month</button>
       <button type="button" data-p="last" aria-pressed="false">Last month</button>
       <button type="button" data-p="year" aria-pressed="false">This year</button>
       <button type="button" data-p="all" aria-pressed="false">All time</button>
     </div>
+    <div class="wknav" id="sumWkNav" hidden><button type="button" class="mini" id="sWkPrev" aria-label="Previous week">‹</button><div class="wl" id="sWkLbl"></div><button type="button" class="mini" id="sWkNext" aria-label="Next week">›</button><button type="button" class="mini" id="sWkNow" hidden>This week</button></div>
     <p class="range" id="rangeLabel"></p>
     <div class="share" data-in="sum"><a class="wa" id="waSum" href="https://wa.me/" target="_blank" rel="noopener">Send summary on WhatsApp</a><button type="button" class="ghost cp" data-src="sum">Copy</button></div>
   </div>
@@ -408,6 +413,12 @@ table.wk td:first-child,table.wk th:first-child{position:static}
       <div class="legend"><span><i style="background:var(--sale)"></i>Sales</span><span><i style="background:var(--spend)"></i>Expenses</span><span><i style="background:var(--ink);height:3px;vertical-align:3px"></i>Profit</span></div>
     </div>
     <div class="chart" id="chart"></div>
+  </section>
+
+  <section class="card" data-in="sum" id="wbwCard">
+    <h2>Week by week</h2>
+    <p class="thelp">Weeks run Monday to Sunday. A week marked <b>part</b> is cut off by the start or end of this period. Tap a week to see the whole week on its own.</p>
+    <div class="tbl" id="wbw"></div>
   </section>
 
   <div class="grid2" data-in="sum">
@@ -539,13 +550,13 @@ const db={collection:()=>({
     update:async d=>{const e=entries.find(x=>x.id===id);if(!e)throw new Error("missing");const old={...e};Object.assign(e,d);if(!saveStore()){Object.assign(e,old);throw new Error("save")}render()},
     delete:async()=>{const i=entries.findIndex(x=>x.id===id);if(i<0)return;const [e]=entries.splice(i,1);if(!saveStore()){entries.splice(i,0,e);throw new Error("save")}render()}
   })})};
-let loaded=true,entries=[],period="month",filter="all",canWrite=true,day=iso(new Date());
+let sumWk=0,loaded=true,entries=[],period="month",filter="all",canWrite=true,day=iso(new Date());
 
 let toastT;function toast(t,err){const el=$("toast");el.textContent=t;el.className="toast on"+(err?" err":"");clearTimeout(toastT);toastT=setTimeout(()=>el.className="toast"+(err?" err":""),2600)}
 
 function range(p){
   const t=new Date();t.setHours(0,0,0,0);
-  if(p==="week"){const s=new Date(t);s.setDate(t.getDate()-((t.getDay()+6)%7));const e=new Date(s);e.setDate(s.getDate()+6);return{s,e,unit:"day",prev:[new Date(s.getTime()-7*864e5),new Date(e.getTime()-7*864e5)],pl:"last week"}}
+  if(p==="week"){const s=new Date(t);s.setDate(t.getDate()-((t.getDay()+6)%7)+7*sumWk);const e=new Date(s);e.setDate(s.getDate()+6);const ps=new Date(s);ps.setDate(s.getDate()-7);const pe=new Date(e);pe.setDate(e.getDate()-7);return{s,e,unit:"day",prev:[ps,pe],pl:"the week before"}}
   if(p==="month")return{s:new Date(t.getFullYear(),t.getMonth(),1),e:new Date(t.getFullYear(),t.getMonth()+1,0),unit:"day",prev:[new Date(t.getFullYear(),t.getMonth()-1,1),new Date(t.getFullYear(),t.getMonth(),0)],pl:"last month"};
   if(p==="last")return{s:new Date(t.getFullYear(),t.getMonth()-1,1),e:new Date(t.getFullYear(),t.getMonth(),0),unit:"day",prev:[new Date(t.getFullYear(),t.getMonth()-2,1),new Date(t.getFullYear(),t.getMonth()-1,0)],pl:"the month before"};
   if(p==="year")return{s:new Date(t.getFullYear(),0,1),e:new Date(t.getFullYear(),11,31),unit:"month",prev:[new Date(t.getFullYear()-1,0,1),new Date(t.getFullYear()-1,11,31)],pl:"last year"};
@@ -673,6 +684,9 @@ function renderDay(){
 function renderSum(){
   const R=range(period),list=inRange(R.s,R.e);
   $("rangeLabel").textContent=fmtD(R.s)+" – "+fmtD(R.e)+(R.prev?" · compared with "+R.pl:"");
+  $("sumWkNav").hidden=period!=="week";
+  if(period==="week"){$("sWkLbl").innerHTML=(sumWk===0?"This week":sumWk===-1?"Last week":sumWk===1?"Next week":"Week of "+short(iso(R.s)))+"<small>"+short(iso(R.s))+" – "+short(iso(R.e))+"</small>";$("sWkNow").hidden=sumWk===0}
+  weekTable(R);
   const ts=sum(list,x=>x.type==="sale"),te=sum(list,x=>x.type==="expense"),tp=ts-te,m=ts?tp/ts*100:null;
   let ps=null,pe=null,pp=null,pm=null;
   if(R.prev){const pl=inRange(R.prev[0],R.prev[1]);ps=sum(pl,x=>x.type==="sale");pe=sum(pl,x=>x.type==="expense");pp=ps-pe;pm=ps?pp/ps*100:null;if(!pl.length)ps=pe=pp=pm=null}
@@ -701,6 +715,20 @@ function renderSum(){
   $("chartTitle").textContent=R.unit==="day"?"Day by day":"Month by month";
   drawChart(b);drawMix(list.filter(x=>x.type==="sale"),ts);expBars(list.filter(x=>x.type==="expense"),te);table(list);
 }
+function wkLbl(a,b){const A=parse(a),B=parse(b),m=d=>d.toLocaleDateString("en-GB",{month:"short"});return a===b?A.getDate()+" "+m(A):A.getMonth()===B.getMonth()?A.getDate()+"–"+B.getDate()+" "+m(B):A.getDate()+" "+m(A)+"–"+B.getDate()+" "+m(B)}
+function weekTable(R){const card=$("wbwCard"),el=$("wbw");
+  if(period==="week"){card.hidden=true;return}card.hidden=false;
+  const[first]=weekOf(iso(R.s)),last=iso(R.e),rows=[];
+  const rs=iso(R.s);for(let w0=first;w0<=last;w0=addDays(w0,7)){const ws=w0<rs?rs:w0,w6=addDays(w0,6),we=w6>last?last:w6,part=ws!==w0||we!==w6,xs=entries.filter(x=>x.date>=ws&&x.date<=we),sl=sum(xs,x=>x.type==="sale"),ex=sum(xs,x=>x.type==="expense"),wg=sum(xs,x=>x.type==="expense"&&x.category===WAGES);
+    rows.push({ws,we,w0,part,sl,ex,wg,pr:sl-ex,n:xs.length})}
+  const shown=rows.filter(r=>r.n).reverse();
+  if(!shown.length){el.innerHTML='<p class="empty">Nothing recorded in this period.</p>';return}
+  let T={sl:0,ex:0,wg:0,pr:0};
+  const body=shown.map(r=>{T.sl+=r.sl;T.ex+=r.ex;T.wg+=r.wg;T.pr+=r.pr;
+    return `<tr data-ws="${r.w0}"><td>${wkLbl(r.ws,r.we)}${r.part?' <span class="tag">part</span>':""}</td><td class="st">${gbp0(r.sl)}</td><td class="xt">${gbp0(r.ex)}</td><td>${gbp0(r.wg)}</td><td class="${r.pr<0?"neg":"pos"}">${gbp0(r.pr)}</td><td>${r.sl?Math.round(r.pr/r.sl*100)+"%":"–"}</td></tr>`}).join("");
+  el.innerHTML=`<table><thead><tr><th>Week</th><th>Sales</th><th>Expenses</th><th>Wages</th><th>Profit</th><th>Margin</th></tr></thead><tbody>${body}</tbody><tfoot><tr><td>Total</td><td>${gbp0(T.sl)}</td><td>${gbp0(T.ex)}</td><td>${gbp0(T.wg)}</td><td class="${T.pr<0?"neg":"pos"}">${gbp0(T.pr)}</td><td>${T.sl?Math.round(T.pr/T.sl*100)+"%":"–"}</td></tr></tfoot></table>`;
+  el.querySelectorAll("tbody tr").forEach(tr=>tr.onclick=()=>{const[cw]=weekOf(iso(new Date()));sumWk=Math.round((parse(tr.dataset.ws)-parse(cw))/(7*864e5));
+    period="week";document.querySelectorAll(".periods button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.p==="week"));renderSum();renderBook();updateShare();window.scrollTo({top:0,behavior:"smooth"})})}
 function nice(v){if(v<=0)return 100;const p=Math.pow(10,Math.floor(Math.log10(v)));const f=v/p;return(f<=1?1:f<=2?2:f<=5?5:10)*p}
 function drawChart(b){
   const W=640,H=220,L=48,R=8,T=10,B=24,n=b.length;
@@ -811,6 +839,8 @@ function sumText(){
   {const w=sum(list,x=>x.type==="expense"&&x.category===WAGES);if(ts&&w)t+="\nWages: "+Math.round(w/ts*100)+"% of sales"}
   const nd=new Set(list.filter(x=>x.type==="sale").map(x=>x.date)).size;if(nd)t+="\nAverage sales per day: "+gbp(ts/nd);
   return t+owedText()}
+const sumGo=d=>{sumWk=d===0?0:sumWk+d;renderSum();renderBook();updateShare()};
+$("sWkPrev").onclick=()=>sumGo(-1);$("sWkNext").onclick=()=>sumGo(1);$("sWkNow").onclick=()=>sumGo(0);
 function updateShare(){$("waDay").href="https://wa.me/?text="+encodeURIComponent(dayText());$("waSum").href="https://wa.me/?text="+encodeURIComponent(sumText())}
 document.querySelectorAll(".cp").forEach(b=>b.onclick=()=>{const t=b.dataset.src==="day"?dayText():sumText();
   try{navigator.clipboard.writeText(t).then(()=>toast("Copied. Paste it into WhatsApp"),()=>toast("Couldn't copy on this device",1))}catch(e){toast("Couldn't copy on this device",1)}});
@@ -1003,7 +1033,7 @@ function owedText(){const ol=owedList();if(!ol.length)return"";
 function render(){remind();renderDay();renderSum();renderBook();updateShare()}
 function setView(v){$("app").dataset.view=v;document.querySelectorAll(".views button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===v));try{localStorage.setItem("till-view",v)}catch(e){}}
 document.querySelectorAll(".views button").forEach(b=>b.onclick=()=>setView(b.dataset.v));
-document.querySelectorAll(".periods button").forEach(b=>b.onclick=()=>{period=b.dataset.p;document.querySelectorAll(".periods button").forEach(x=>x.setAttribute("aria-pressed",x===b));renderSum();renderBook();updateShare()});
+document.querySelectorAll(".periods button").forEach(b=>b.onclick=()=>{if(b.dataset.p==="week"&&period!=="week")sumWk=0;period=b.dataset.p;document.querySelectorAll(".periods button").forEach(x=>x.setAttribute("aria-pressed",x===b));renderSum();renderBook();updateShare()});
 document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{filter=b.dataset.f;document.querySelectorAll("[data-f]").forEach(x=>x.setAttribute("aria-pressed",x===b));renderBook()});
 $("dPrev").onclick=()=>setDay(addDays(day,-1));$("dNext").onclick=()=>setDay(addDays(day,1));$("dToday").onclick=()=>setDay(iso(new Date()));
 $("dDate").addEventListener("change",e=>{if(e.target.value)setDay(e.target.value)});
